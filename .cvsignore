@@ -1,0 +1,8 @@
+Makefile
+autom4te.cache
+build-stamp
+config.h
+config.log
+config.status
+install-stamp
+libtool

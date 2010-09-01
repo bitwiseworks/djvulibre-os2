@@ -1,0 +1,10 @@
+#! /bin/sh
+
+case "$1" in
+    remove|deconfigure)
+	# Alternatives
+	update-alternatives --quiet --remove djview /usr/bin/djview3
+	;;
+esac
+
+#DEBHELPER#

@@ -1,0 +1,23 @@
+djvulibre for Debian
+--------------------
+
+Packaged with the cooperation of the upstream authors Yann LeCun and
+Leon Bottou.
+
+ WARNING: OTHERS MAY BE ABLE TO ACCESS FILES PROCESSED BY ANY2DJVU.
+ The any2djvu program uploads files to a server for conversion,
+ compression, and OCR.  Others (aside from the uploader) can
+ theoretically access the compressed files.  This has been known to
+ happen.
+
+If someone else wants to take over this package I'm willing (eager) to
+give it up.  Just ask.  (In fact, that goes for all my packages!)  If
+someone does take it over, I'm happy to serve as an interface to the
+upstream authors as I am in contact with them professionally anyway.
+
+The Debian CVS repository is now shared with upstream.
+ cvs -d :ext:UID@djvu.cvs.sourceforge.net:/cvsroot/djvu checkout djvulibre-3.5
+This makes the appropriate build command something like
+ cvs-buildpackage -U debian_version_3_5_17-2 -M djvulibre-3.5 -F
+
+ -- Barak A. Pearlmutter <bap@debian.org>, Mon, 18 Sep 2006 22:44:59 +0100
