@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: GUnicode.cpp,v 1.14 2009/05/17 23:57:42 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: GUnicode.cpp,v 1.15 2009/07/30 01:59:28 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -68,13 +68,6 @@
 #if HAS_ICONV
 #include <iconv.h>
 #endif
-
-#if !defined(AUTOCONF) || HAVE_STDINT_H
-# include <stdint.h>
-#elif HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
-
 
 #ifdef HAVE_NAMESPACES
 namespace DJVU {

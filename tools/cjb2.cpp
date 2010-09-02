@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: cjb2.cpp,v 1.18 2007/05/19 03:07:34 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: cjb2.cpp,v 1.21 2010/05/27 20:47:57 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -80,11 +80,11 @@
     Options are:
     \begin{description}
     \item[-dpi xxx]     Specify image resolution (default 300).
-    \item[-lossless]    Lossless compresion (same as -losslevel 0, default).
-    \item[-clean]       Quasi-lossless compresion (same as -losslevel 1).
+    \item[-lossless]    Lossless compression (same as -losslevel 0, default).
+    \item[-clean]       Quasi-lossless compression (same as -losslevel 1).
     \item[-lossy]       Lossy compression (same as -losslevel 100).
     \item[-losslevel n] Set loss level (0 to 200)
-    \item[-verbose]     Displays additional messages.
+    \item[-verbose]     Display additional messages.
     \end{description}
     Encoding is lossless unless one or several lossy options are selected.
     The #dpi# argument mostly affects the cleaning thresholds.
@@ -102,7 +102,7 @@
     Pascal Vincent <vincentp@iro.umontreal.ca>\\
     Ilya Mezhirov <ilya@mezhirov.mccme.ru>
     @version
-    $Id: cjb2.cpp,v 1.18 2007/05/19 03:07:34 leonb Exp $ */
+    $Id: cjb2.cpp,v 1.21 2010/05/27 20:47:57 leonb Exp $ */
 //@{
 //@}
 
@@ -922,9 +922,9 @@ usage()
          "Simple DjVuBitonal encoder\n\n"
          "Usage: cjb2 [options] <input-pbm-or-tiff> <output-djvu>\n"
          "Options are:\n"
-         " -verbose        Displays additional messages.\n"
+         " -verbose        Display additional messages.\n"
          " -dpi <n>        Specify image resolution (default 300).\n"
-         " -clean          Cleanup image by remove small flyspecs.\n"
+         " -clean          Cleanup image by removing small flyspecks.\n"
          " -lossy          Lossy compression (implies -clean as well)\n"
          " -losslevel <n>  Loss factor (implies -lossy, default 100)\n"
          "Encoding is lossless unless a lossy options is selected.\n" );
@@ -936,6 +936,7 @@ int
 main(int argc, const char **argv)
 {
   setlocale(LC_ALL,"");
+  setlocale(LC_NUMERIC,"C");
   djvu_programname(argv[0]);
   GArray<GUTF8String> dargv(0,argc-1);
   for(int i=0;i<argc;++i)

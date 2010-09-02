@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: djvmcvt.cpp,v 1.9 2007/03/25 20:48:35 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: djvmcvt.cpp,v 1.10 2010/05/27 20:47:57 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -136,7 +136,7 @@
     @author
     Andrei Erofeev <eaf@geocities.com>
     @version
-    #$Id: djvmcvt.cpp,v 1.9 2007/03/25 20:48:35 leonb Exp $# */
+    #$Id: djvmcvt.cpp,v 1.10 2010/05/27 20:47:57 leonb Exp $# */
 
 
 #include "DjVuDocument.h"
@@ -207,6 +207,7 @@ int
 main(int argc, char ** argv)
 {
   setlocale(LC_ALL,"");
+  setlocale(LC_NUMERIC,"C");
   djvu_programname(argv[0]);
   GArray<GUTF8String> dargv(0,argc-1);
   for(int i=0;i<argc;++i)

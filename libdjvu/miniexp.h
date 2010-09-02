@@ -15,7 +15,7 @@
 // GNU General Public License for more details.
 // -------------------------------------------------------------------
 */
-/* $Id: miniexp.h,v 1.22 2008/07/06 00:04:37 leonb Exp $ */
+/* $Id: miniexp.h,v 1.23 2009/11/13 21:54:04 leonb Exp $ */
 
 #ifndef MINIEXP_H
 #define MINIEXP_H
@@ -443,7 +443,7 @@ MINILISPAPI void minilisp_finish(void);
      Vertical bars <|> can be used to delimit names that
      contain blanks, special characters, non printable
      characters, non ascii characters, or 
-     can be confused as a number.
+     can be confused for a number.
      
    - Numbers follow the syntax specified by the C
      function strtol() with base=0.

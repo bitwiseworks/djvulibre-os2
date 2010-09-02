@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: djvuserve.cpp,v 1.27 2007/03/25 20:48:36 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: djvuserve.cpp,v 1.28 2010/05/27 20:47:57 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -354,8 +354,8 @@ int
 main(int argc, char ** argv)
 {
   setlocale(LC_ALL,"");
+  setlocale(LC_NUMERIC,"C");
   djvu_programname(argv[0]);
-
   G_TRY 
     {
       // Obtain path

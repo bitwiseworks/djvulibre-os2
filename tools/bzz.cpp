@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: bzz.cpp,v 1.8 2007/03/25 20:48:35 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: bzz.cpp,v 1.9 2010/05/27 20:47:56 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -87,7 +87,7 @@
     @author
     L\'eon Bottou <leonb@research.att.com> -- initial implementation
     @version
-    $Id: bzz.cpp,v 1.8 2007/03/25 20:48:35 leonb Exp $ */
+    $Id: bzz.cpp,v 1.9 2010/05/27 20:47:56 leonb Exp $ */
 //@{
 //@}
 
@@ -123,6 +123,7 @@ int
 main(int argc, char **argv)
 {
   setlocale(LC_ALL,"");
+  setlocale(LC_NUMERIC,"C");
   djvu_programname(argv[0]);
   GArray<GUTF8String> dargv(0,argc-1);
   for(int i=0;i<argc;++i)

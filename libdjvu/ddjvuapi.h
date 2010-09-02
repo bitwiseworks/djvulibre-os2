@@ -54,7 +54,7 @@
 //C- +------------------------------------------------------------------
 */
 
-/* $Id: ddjvuapi.h,v 1.66 2008/04/17 19:57:21 leonb Exp $ */
+/* $Id: ddjvuapi.h,v 1.70 2010/06/27 20:31:07 leonb Exp $ */
 
 #ifndef DDJVUAPI_H
 #define DDJVUAPI_H
@@ -112,6 +112,8 @@ extern "C" {
 
    Version   Change
    -----------------------------
+     19    Added:
+              ddjvu_document_create_by_filename_utf8
      18    Added:
               ddjvu_document_get_{anno,pagedump,filedump}()
            Modifed (binary compatible):
@@ -133,9 +135,7 @@ extern "C" {
      14    Initial version.
 */
 
-#define DDJVUAPI_VERSION 18
-
-
+#define DDJVUAPI_VERSION 19
 
 typedef struct ddjvu_context_s    ddjvu_context_t;
 typedef union  ddjvu_message_s    ddjvu_message_t;
@@ -489,8 +489,8 @@ struct ddjvu_message_info_s {   /* ddjvu_message_t::m_info */
    and <ddjvu_stream_close>.
 
    Localized characters in argument <url> should be in 
-   urlencoded utf-8 (like "%2A"). What is happening for non 
-   ascii characters is unclear (probably plain utf8). */
+   urlencoded UTF-8 (like "%2A"). What is happening for non 
+   ascii characters is unclear (probably UTF-8). */
 
 DDJVUAPI ddjvu_document_t *
 ddjvu_document_create(ddjvu_context_t *context,
@@ -501,13 +501,19 @@ ddjvu_document_create(ddjvu_context_t *context,
 /* ddjvu_document_create_by_filename ---
    Creates a document for a DjVu document stored in a file.
    The document will directly access the specified DjVu file 
-   or related files without generating <m_newstream> messages. */
+   or related files without generating <m_newstream> messages.
+   The standard function expects the filename in locale encoding. 
+   The utf8 variant expects an utf8 encoded filename. */
 
 DDJVUAPI ddjvu_document_t *
 ddjvu_document_create_by_filename(ddjvu_context_t *context,
                                   const char *filename,
                                   int cache);
 
+DDJVUAPI ddjvu_document_t *
+ddjvu_document_create_by_filename_utf8(ddjvu_context_t *context,
+                                       const char *filename,
+                                       int cache);
 
 /* ddjvu_document_job ---
    Access the job object in charge of decoding the document header. 
@@ -1351,6 +1357,7 @@ ddjvu_document_print(ddjvu_document_t *document, FILE *output,
    * Option "-indirect=<filename>" causes the creation
      of an indirect document with index file <filename>
      and auxiliary files in the same directory.
+     The file name is UTF-8 encoded.
      When this option is specified, the argument <output>
      is ignored and should be NULL.
 */
@@ -1432,7 +1439,7 @@ ddjvu_document_get_outline(ddjvu_document_t *document);
    and <compat> is true, this function searches a shared 
    annotation chunk and returns its contents.
 
-   This function returns <miniexp_dummy> is the information
+   This function returns <miniexp_dummy> if the information
    is not yet available. It may then cause the emission 
    of <m_pageinfo> messages with null <m_any.page>.
 
@@ -1551,7 +1558,7 @@ ddjvu_anno_get_vertalign(miniexp_t annotations);
 /* ddjvu_anno_get_hyperlinks --
    Parse the annotations and returns a zero terminated 
    array of <(maparea ...)> s-expressions.
-   The called should free this array with function <free>.
+   The caller should free this array with function <free>.
    These s-expressions remain allocated as long
    as the annotations remain allocated.
    See also <(maparea ...)> in the djvused man page. */
@@ -1563,7 +1570,7 @@ ddjvu_anno_get_hyperlinks(miniexp_t annotations);
 /* ddjvu_anno_get_metadata_keys --
    Parse the annotations and returns a zero terminated 
    array of key symbols for the page metadata.
-   The called should free this array with function <free>.
+   The caller should free this array with function <free>.
    See also <(metadata ...)> in the djvused man page. */
 
 DDJVUAPI miniexp_t *

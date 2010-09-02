@@ -47,12 +47,18 @@ testlibver:
 
 config.status: configure
 	dh_testdir
-	dh_auto_configure -- --disable-desktopfiles --enable-static --enable-shared
+	dh_auto_configure -- --enable-djview --disable-desktopfiles --enable-static --enable-shared
 
 build: build-stamp
 build-stamp: config.status
 	dh_testdir
 	$(MAKE) -k depend	# otherwise a missing Makefile.dep blows up
+# deliciously monstrous libtool workaround by Cthulhu via H.P.Lovecraft@ubuntu.com,
+# http://patches.ubuntu.com/d/djvulibre/djvulibre_3.5.22-1ubuntu1.patch
+ifeq ($(DEB_HOST_GNU_TYPE),arm-linux-gnueabi)
+	sed -i.orig '/^LIBS/s/-lm/-lm -lsupc++ -lgcc/' libdjvu/Makefile
+	touch -r libdjvu/Makefile.orig libdjvu/Makefile
+endif
 	$(MAKE) OPTS="$(CFLAGS)" # hotwire compiler options
 	touch build-stamp
 

@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: cpaldjvu.cpp,v 1.16 2008/05/05 02:24:40 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: cpaldjvu.cpp,v 1.17 2010/05/27 20:47:57 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -98,7 +98,7 @@
     @author
     L\'eon Bottou <leonb@research.att.com>
     @version
-    #$Id: cpaldjvu.cpp,v 1.16 2008/05/05 02:24:40 leonb Exp $# */
+    #$Id: cpaldjvu.cpp,v 1.17 2010/05/27 20:47:57 leonb Exp $# */
 //@{
 //@}
 
@@ -873,6 +873,7 @@ int
 main(int argc, const char **argv)
 {
   setlocale(LC_ALL,"");
+  setlocale(LC_NUMERIC,"C");
   djvu_programname(argv[0]);
   GArray<GUTF8String> dargv(0,argc-1);
   for(int i=0;i<argc;++i)
