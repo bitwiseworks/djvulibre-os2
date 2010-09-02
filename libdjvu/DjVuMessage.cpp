@@ -80,7 +80,7 @@
 # include <windows.h>
 # include <winreg.h>
 #endif
-#ifdef UNIX
+#if defined(UNIX) || defined(__OS2__)
 # include <unistd.h>
 # include <pwd.h>
 # include <sys/types.h>
@@ -182,7 +182,7 @@ GetModulePath( void )
   GOS::cwd(cwd);
   return retval;
 }
-#elif defined(UNIX)
+#elif defined(UNIX) || defined(__OS2__)
 
 static GList<GURL>
 parsePATH(void)
@@ -272,7 +272,7 @@ DjVuMessage::GetProfilePaths(void)
     const GUTF8String envp(GOS::getenv(DjVuEnv));
     if(envp.length())
       appendPath(GURL::Filename::UTF8(envp),pathsmap,paths);
-#if defined(WIN32) || defined(UNIX)
+#if defined(WIN32) || defined(UNIX) || defined(__OS2__)
     GURL mpath(GetModulePath());
     if(!mpath.is_empty() && mpath.is_dir())
     {

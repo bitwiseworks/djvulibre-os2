@@ -161,6 +161,9 @@
 #include <unistd.h>
 #endif
 
+#ifdef __OS2__
+#define _tcsrchr strrchr
+#endif
 
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
@@ -1530,7 +1533,7 @@ GURL::mkdir() const
     retval = baseURL.mkdir();
   if(!retval)
     {
-#if defined(UNIX)
+#if defined(UNIX) || defined(__OS2__)
       if (is_dir())
         retval = 0;
       else 
@@ -1556,7 +1559,7 @@ GURL::deletefile(void) const
   int retval = -1;
   if(is_local_file_url())
     {
-#if defined(UNIX)
+#if defined(UNIX) || defined(__OS2__)
       if (is_dir())
         retval = ::rmdir(NativeFilename());
       else
@@ -1757,7 +1760,7 @@ GURL::expand_name(const GUTF8String &xfname, const char *from)
       EMPTY_LOOP;
     *s = 0;
   }
-#elif defined (WIN32) // WIN32 implementation
+#elif defined (WIN32) || defined(__OS2__)// WIN32 implementation
   // Handle base
   strcpy(string_buffer, (char const *)(from ? expand_name(from) : GOS::cwd()));
   //  GNativeString native;
@@ -1795,7 +1798,11 @@ GURL::expand_name(const GUTF8String &xfname, const char *from)
           drv[1]=colon;
           drv[2]= dot ;
           drv[3]=0;
+#ifdef __OS2__
+          s = realpath(drv, string_buffer);
+#else
           GetFullPathName(drv, maxlen, string_buffer, &s);
+#endif
           strcpy(string_buffer,(const char *)GUTF8String(string_buffer).getNative2UTF8());
           s = string_buffer;
         }

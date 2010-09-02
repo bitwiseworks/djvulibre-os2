@@ -170,7 +170,7 @@ static const char nillchar=0;
 static inline int
 finddirsep(const GUTF8String &fname)
 {
-#if defined(WIN32)
+#if defined(WIN32) || defined(OS2)
   return fname.rcontains("\\/",0);
 #elif defined(UNIX)
   return fname.rsearch('/',0);
