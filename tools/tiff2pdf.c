@@ -15,7 +15,7 @@
 //C- GNU General Public License for more details.
 //C-  ------------------------------------------------------------------
 //
-// $Id: tiff2pdf.c,v 1.2 2008/07/06 03:24:40 leonb Exp $ */
+// $Id: tiff2pdf.c,v 1.5 2010/06/18 05:28:59 leonb Exp $ */
 
 /* The following code is derived from program "tiff2pdf"
  * whose copyright notice is reproduced below.
@@ -980,7 +980,7 @@ static T2P* t2p_init()
 		TIFFError(
 			TIFF2PDF_MODULE, 
 			"Can't allocate %u bytes of memory for t2p_init", 
-			sizeof(T2P));
+			(int)sizeof(T2P));
 		return( (T2P*) NULL );
 	}
 	_TIFFmemset(t2p, 0x00, sizeof(T2P));
@@ -1090,7 +1090,7 @@ static void t2p_validate(T2P* t2p){
 		if(t2p->pdf_defaultcompressionquality%100 !=0){
 			TIFFError(
 				TIFF2PDF_MODULE, 
-				"PNG Group predictor differencing not implemented, assuming compresion quality %u", 
+				"PNG Group predictor differencing not implemented, assuming compression quality %u", 
 				t2p->pdf_defaultcompressionquality);
 		}
 		t2p->pdf_defaultcompressionquality%=100;
@@ -1124,7 +1124,7 @@ static void t2p_read_tiff_init(T2P* t2p, TIFF* input){
 		TIFFError(
 			TIFF2PDF_MODULE, 
 			"Can't allocate %u bytes of memory for tiff_pages array, %s", 
-			directorycount * sizeof(T2P_PAGE), 
+			directorycount * (int)sizeof(T2P_PAGE), 
 			TIFFFileName(input));
 		t2p->t2p_error = T2P_ERR_ERROR;
 		return;
@@ -1135,7 +1135,7 @@ static void t2p_read_tiff_init(T2P* t2p, TIFF* input){
 		TIFFError(
 			TIFF2PDF_MODULE, 
 			"Can't allocate %u bytes of memory for tiff_tiles array, %s", 
-			directorycount * sizeof(T2P_TILES), 
+			directorycount * (int)sizeof(T2P_TILES), 
 			TIFFFileName(input));
 		t2p->t2p_error = T2P_ERR_ERROR;
 		return;
@@ -1267,7 +1267,7 @@ static void t2p_read_tiff_init(T2P* t2p, TIFF* input){
 				TIFFError(
 					TIFF2PDF_MODULE, 
 					"Can't allocate %u bytes of memory for t2p_read_tiff_init, %s", 
-					t2p->tiff_tiles[i].tiles_tilecount * sizeof(T2P_TILE), 
+					t2p->tiff_tiles[i].tiles_tilecount * (int)sizeof(T2P_TILE), 
 					TIFFFileName(input));
 				t2p->t2p_error = T2P_ERR_ERROR;
 				return;
@@ -1506,8 +1506,7 @@ static void t2p_read_tiff_data(T2P* t2p, TIFF* input){
 				TIFFError(
 					TIFF2PDF_MODULE, 
 					"No support for palettized image %s with not one sample per pixel", 
-					TIFFFileName(input), 
-					t2p->tiff_samplesperpixel);
+					TIFFFileName(input) );
 				t2p->t2p_error = T2P_ERR_ERROR;
 				return;
 			}
@@ -1576,8 +1575,7 @@ static void t2p_read_tiff_data(T2P* t2p, TIFF* input){
 				TIFFError(
 					TIFF2PDF_MODULE, 
 					"No support for palettized CMYK image %s with not one sample per pixel", 
-					TIFFFileName(input), 
-					t2p->tiff_samplesperpixel);
+					TIFFFileName(input) );
 				t2p->t2p_error = T2P_ERR_ERROR;
 				return;
 			}
@@ -1656,8 +1654,7 @@ static void t2p_read_tiff_data(T2P* t2p, TIFF* input){
 			TIFFError(
 				TIFF2PDF_MODULE, 
 				"No support for %s with photometric interpretation LogL/LogLuv", 
-				TIFFFileName(input),
-				t2p->tiff_photometric);
+				TIFFFileName(input));
 			t2p->t2p_error = T2P_ERR_ERROR;
 			return;
 		default:
@@ -5021,13 +5018,14 @@ static tsize_t t2p_write_pdf_trailer(T2P* t2p, TIFF* output)
 	tsize_t written = 0;
 	char buffer[32];
 	int buflen = 0;
-	char fileidbuf[16];
+        int ifileidbuf[4];
+	char *fileidbuf = (char*)ifileidbuf;
 	int i = 0;
 
-	((int*)fileidbuf)[0] = rand();
-	((int*)fileidbuf)[1] = rand();
-	((int*)fileidbuf)[2] = rand();
-	((int*)fileidbuf)[3] = rand();
+	ifileidbuf[0] = rand();
+	ifileidbuf[1] = rand();
+	ifileidbuf[2] = rand();
+	ifileidbuf[3] = rand();
 	t2p->pdf_fileid = (char*)_TIFFmalloc(33);
 	if(t2p->pdf_fileid == NULL) {
 		TIFFError(

@@ -18,16 +18,17 @@
 # DjVuLibre-3.5 is derived from the DjVu(r) Reference Library
 # distribued by Lizardtech Software.
 #
-# $Id: configure.ac,v 1.99 2009/05/21 15:15:50 leonb Exp $
+# $Id: configure.ac,v 1.104 2010/08/15 02:20:58 leonb Exp $
 #
 # ----------------------------------------
 # Initialization
 # ----------------------------------------
 
 AC_PREREQ(2.50)
-AC_INIT(djvulibre, 3.5.22)
-AC_REVISION($Id: configure.ac,v 1.99 2009/05/21 15:15:50 leonb Exp $)
+AC_INIT(djvulibre, 3.5.23)
+AC_REVISION($Id: configure.ac,v 1.104 2010/08/15 02:20:58 leonb Exp $)
 AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_SRCDIR(INSTALL)
 AC_CONFIG_HEADER(config.h:config/config.h.in)
 AC_PREFIX_DEFAULT(/usr/local)
@@ -99,20 +100,25 @@ AC_PROG_MAKE_SET
 
 # Programs
 AC_PROG_LN_S
-AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(AR, ar)
 AC_PATH_PROG(TOUCH, touch)
 AC_PATH_PROG(MKDIR, mkdir)
+AC_PATH_PROG(RSVG, rsvg, false)
 AC_PATH_PROG(CONVERT, convert, false)
 AC_PROG_INSTALL
 
+# tweak rm to make libtool happy
+AC_PATH_PROG(RM, rm) 
+RM="$RM -f"
+
 # Libtool & Compilers
 AC_DISABLE_STATIC
+AC_PROG_RANLIB
 AC_PROG_LIBTOOL
 AC_PROG_CC
 AC_PROG_CXX
-AC_PROG_RANLIB
 AC_SUBST(LIBTOOL_DEPS)
+
 
 # C++
 AC_LANG(C++)
@@ -157,6 +163,7 @@ AC_TYPE_UINT32_T
 AC_CHECK_TYPES(wchar_t)
 AC_CHECK_TYPES(long long int)
 AC_CHECK_TYPES(mbstate_t,,,[#include "wchar.h"])
+AC_SYS_LARGEFILE
 
 # ----------------------------------------
 # Functions
@@ -164,6 +171,7 @@ AC_CHECK_TYPES(mbstate_t,,,[#include "wchar.h"])
 
 AC_FUNC_MMAP
 AC_FUNC_FORK
+AC_FUNC_FSEEKO
 AC_CHECK_FUNCS(wcrtomb iswspace setenv)
 AC_CHECK_FUNCS(putc_unlocked strerror vsnprintf)
 AC_CHECK_FUNCS(gethostname strftime getpwuid)
@@ -203,27 +211,6 @@ AC_PATH_THREADS(,
 [ no_threads=yes
   AC_MSG_WARN([Thread support is disabled]) ])
 
-# Search QT library
-AC_PATH_QT(,
-[ no_qt=yes
-  AC_MSG_WARN([Qt support is disabled]) ])
-
-# Search X11 and Xt headers
-if test "$no_x" != "yes" ; then
-    savedCFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS ${X_CFLAGS}"
-    AC_CHECK_HEADERS(X11/extensions/Xext.h,,,[include <X11/Xlib.h>])
-    AC_CHECK_HEADER(X11/Shell.h, [], [no_xt=yes])
-    AC_CHECK_HEADER(X11/IntrinsicP.h, [], [no_xt=yes])
-    CFLAGS="$savedCFLAGS"
-    if test "$no_xt" == "yes" ; then
-        AC_MSG_WARN([Xt include files not found])
-    else
-        AC_DEFINE(HAVE_XT,1,[Define if you have the Xt include files.])
-    fi
-fi
-
-
 # ----------------------------------------
 # What to compile
 # ----------------------------------------
@@ -248,13 +235,41 @@ AC_SUBST(XML_NO)
 
 # Check compilation of djview
 AC_ARG_ENABLE(djview,
-   AC_HELP_STRING([--disable-djview],
-                  [Disable the compilation of djview.]),
+   AC_HELP_STRING([--enable-djview],
+                  [Enable the compilation of djview3.]),
    [ac_enable_djview=$enableval], 
-   [ac_enable_djview=yes] ) 
+   [ac_enable_djview=no] ) 
 if test x$ac_enable_djview != xno ; then
-  if test x$no_threads = xyes || test x$no_qt = xyes || test x$no_xt = xyes ; then
-     AC_MSG_WARN([Disabling compilation of djview.
+    AC_MSG_WARN([Enabling compilation of djview3.
+--------------------------------------------------------
+*** The Qt2 or Qt3 based viewer, djview3, is considered obsolete.
+*** The recommended viewer is now the Qt4 based viewer, djview4.
+*** Djview4 comes in a separate source package that should be
+*** compiled after installing the djvulibre library.
+--------------------------------------------------------])
+    # Search QT library
+    AC_PATH_QT(,
+        [ no_qt=yes
+            AC_MSG_WARN([Qt3 support is disabled]) ])
+    
+    # Search X11 and Xt headers
+    if test "$no_x" != "yes" ; then
+        savedCFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS ${X_CFLAGS}"
+        AC_CHECK_HEADERS(X11/extensions/Xext.h,,,[include <X11/Xlib.h>])
+        AC_CHECK_HEADER(X11/Shell.h, [], [no_xt=yes])
+        AC_CHECK_HEADER(X11/IntrinsicP.h, [], [no_xt=yes])
+        CFLAGS="$savedCFLAGS"
+        if test "$no_xt" == "yes" ; then
+            AC_MSG_WARN([Xt include files not found])
+        else
+            AC_DEFINE(HAVE_XT,1,[Define if you have the Xt include files.])
+        fi
+    fi
+
+    if test x$no_threads = xyes || test x$no_qt = xyes || test x$no_xt = xyes 
+    then
+       AC_MSG_WARN([Disabling compilation of djview.
 --------------------------------------------------------
 *** The GUI portion of this package will not be compiled.
 *** This is probably not what you want.  Chech the output
@@ -262,8 +277,8 @@ if test x$ac_enable_djview != xno ; then
 *** Investigate options --with-qt and --enable-threads.
 *** Make sure the Xt include files are present.
 --------------------------------------------------------])
-     ac_enable_djview=no;
-  fi
+       ac_enable_djview=no;
+    fi
 fi
 if test x$ac_enable_djview != xno ; then
    GUI_YES=''

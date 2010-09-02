@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: DjVuInfo.cpp,v 1.11 2007/03/25 20:48:30 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: DjVuInfo.cpp,v 1.12 2010/02/19 16:20:36 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -157,7 +157,7 @@ DjVuInfo::encode(ByteStream &bs)
   unsigned char flags;
   switch (orientation) 
     {
-    default: flags=0; break;
+    default: flags=1; break;
     case 1:  flags=6; break;
     case 2:  flags=2; break;
     case 3:  flags=5; break;

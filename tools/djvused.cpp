@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 //
-// $Id: djvused.cpp,v 1.34 2008/08/05 20:48:20 bpearlmutter Exp $
-// $Name: release_3_5_22 $
+// $Id: djvused.cpp,v 1.39 2010/05/27 20:47:57 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -504,9 +504,14 @@ command_dump(ParsingByteStream &)
     pool = g().doc->get_init_data_pool();
   DjVuDumpHelper helper;
   GP<ByteStream> bs = helper.dump(pool);
-  GP<ByteStream> obs=ByteStream::create("w");
+  size_t size = bs->size();
+  GUTF8String str;
+  char *buf = str.getbuf(size);
   bs->seek(0);
-  obs->copy(*bs);
+  bs->readall(buf, size);
+  GNativeString ns = str;
+  GP<ByteStream> obs=ByteStream::create("w");
+  obs->writall((const char*)ns, ns.length());
 }
 
 static void
@@ -982,7 +987,7 @@ command_print_meta(ParsingByteStream &)
       GP<DjVmDir::File> frec = g().doc->get_djvm_dir()->get_shared_anno_file();
       if (frec)
         {
-          vprint("print-meta: implicitely selecting shared annotations");
+          vprint("print-meta: implicitly selecting shared annotations");
           select_clear();
           select_add(frec);
         }
@@ -1101,11 +1106,11 @@ command_set_meta(ParsingByteStream &pbs)
       GP<DjVmDir::File> frec = g().doc->get_djvm_dir()->get_shared_anno_file();
       if (frec)
         {
-          vprint("print-meta: implicitely selecting shared annotations.");
+          vprint("print-meta: implicitly selecting shared annotations.");
         }
       else if (metadata.size() > 0)
         {
-          vprint("print-meta: implicitely creating and selecting shared annotations.");
+          vprint("print-meta: implicitly creating and selecting shared annotations.");
           g().doc->create_shared_anno_file();
           frec = g().doc->get_djvm_dir()->get_shared_anno_file();
         }
@@ -1458,10 +1463,11 @@ output(const GP<DjVuFile> &f, const GP<ByteStream> &out,
         }
       if (id && ant->size() + txt->size())
         {
-          GUTF8String msg;
-          msg.format("# -------------------------------------\n"
-                     "select '%s'\n", id);
-          out->write((const char*)msg, msg.length());
+          static const char msg1[] = "# ------------------------- \n select \0";
+          static const char msg2[] = "\n\0";
+          out->write(msg1, strlen(msg1));
+          print_c_string(id, strlen(id), *out);
+          out->write(msg2, strlen(msg2));
         }
       if (ant->size()) 
         {
@@ -1970,6 +1976,7 @@ int
 main(int argc, char **argv)
 {
   setlocale(LC_ALL,"");
+  setlocale(LC_NUMERIC,"C");
   djvu_programname(argv[0]);
   G_TRY
      {
@@ -1986,7 +1993,7 @@ main(int argc, char **argv)
           else if (!strcmp(argv[i],"-e") && !g().cmdbs && ++i<argc) 
             g().cmdbs = ByteStream::create_static(argv[i],strlen(argv[i]));
           else if (argv[i][0] != '-' && !g().djvufile)
-            g().djvufile = argv[i];
+            g().djvufile = GNativeString(argv[i]);
           else
             usage();
       }

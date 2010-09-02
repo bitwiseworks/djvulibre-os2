@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: djvuextract.cpp,v 1.10 2008/01/11 15:44:25 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: djvuextract.cpp,v 1.11 2010/05/27 20:47:57 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -95,7 +95,7 @@
     @memo
     Extract components from DjVu files.
     @version
-    #$Id: djvuextract.cpp,v 1.10 2008/01/11 15:44:25 leonb Exp $#
+    #$Id: djvuextract.cpp,v 1.11 2010/05/27 20:47:57 leonb Exp $#
     @author
     L\'eon Bottou <leonb@research.att.com> - Initial implementation\\
     Andrei Erofeev <eaf@geocities.com> - Multipage support */
@@ -212,6 +212,7 @@ int
 main(int argc, char **argv)
 {
   setlocale(LC_ALL,"");
+  setlocale(LC_NUMERIC,"C");
   djvu_programname(argv[0]);
   GArray<GUTF8String> dargv(0,argc-1);
   for(int i=0;i<argc;++i)

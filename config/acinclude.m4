@@ -719,15 +719,15 @@ AC_DEFUN([AC_PATH_QT],
     X_LIBS="$X_LIBS $X_PRE_LIBS -lXext -lX11 $X_EXTRA_LIBS"
   fi
   # Variables
-  AC_ARG_VAR(QTDIR,[Location of the Qt package.])
-  AC_ARG_VAR(QT_CFLAGS,[Flags for compiling Qt programs.])
-  AC_ARG_VAR(QT_LIBS,[Flags for linking Qt programs.])
+  AC_ARG_VAR(QTDIR,[Location of the Qt3 package.])
+  AC_ARG_VAR(QT_CFLAGS,[Flags for compiling Qt3 programs.])
+  AC_ARG_VAR(QT_LIBS,[Flags for linking Qt3 programs.])
   AC_ARG_VAR(MOC,[Location of the MOC program.])
   AC_ARG_VAR(UIC,[Location of the UIC program.])
   # Arguments
   AC_ARG_WITH(qt, 
       AC_HELP_STRING([--with-qt=DIR],
-                     [where the Qt root is installed.]),
+                     [where the Qt3 root is installed.]),
       [ test x$withval != xyes && QTDIR=$withval ])
   test x$no_x = xyes && QTDIR=no
   # Check for the lib64 thing
@@ -856,10 +856,10 @@ AC_DEFUN([AC_PATH_QT],
           QT_LIBS="$newqtlibs"
         fi
     fi
-    AC_PATH_PROGS(MOC, [moc moc3 moc2], [:], [$QTDIR/bin $PATH])
-    AC_PATH_PROGS(UIC, [uic uic3 uic2], [:], [$QTDIR/bin $PATH])
-    AC_PATH_PROGS(LUPDATE, [lupdate],   [:], [$QTDIR/bin $PATH])
-    AC_PATH_PROGS(LRELEASE,[lrelease],  [:], [$QTDIR/bin $PATH])
+    AC_PATH_PROGS(MOC, [moc-qt3 moc], [:], [$QTDIR/bin $PATH])
+    AC_PATH_PROGS(UIC, [uic-qt3 uic], [:], [$QTDIR/bin $PATH])
+    AC_PATH_PROGS(LUPDATE, [lupdate-qt3 lupdate], [:], [$QTDIR/bin $PATH])
+    AC_PATH_PROGS(LRELEASE, [lrelease-qt3 lrelease], [:], [$QTDIR/bin $PATH])
     if test -x "$MOC" ; then : ; else 
         AC_MSG_WARN([Cannot locate the Qt Meta-Object compiler.])
         ac_has_qt=no

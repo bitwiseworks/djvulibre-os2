@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: djvudump.cpp,v 1.8 2007/03/25 20:48:35 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: djvudump.cpp,v 1.10 2010/05/27 20:47:57 leonb Exp $
+// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -108,7 +108,7 @@ xxx
     @author
     L\'eon Bottou <leonb@research.att.com>
     @version
-    #$Id: djvudump.cpp,v 1.8 2007/03/25 20:48:35 leonb Exp $# */
+    #$Id: djvudump.cpp,v 1.10 2010/05/27 20:47:57 leonb Exp $# */
 //@{
 //@}
 
@@ -116,6 +116,7 @@ xxx
 #include "ByteStream.h"
 #include "GException.h"
 #include "GOS.h"
+#include "GString.h"
 #include "GURL.h"
 #include "DjVuMessage.h"
 
@@ -128,13 +129,17 @@ void
 display(const GURL &url)
 {
    DjVuDumpHelper helper;
-   GP<ByteStream> ibs=ByteStream::create(url, "rb");
-   GP<ByteStream> str_out;
-   str_out=helper.dump(ibs);
-   GP<ByteStream> obs=ByteStream::create("w");
-   str_out->seek(0);
-   obs->copy(*str_out);
+   GP<ByteStream> ibs = ByteStream::create(url, "rb");
+   GP<ByteStream> obs = helper.dump(ibs);
+   GUTF8String str;
+   size_t size = obs->size();
+   char *buf = str.getbuf(obs->size());
+   obs->seek(0);
+   obs->readall(buf, size);
+   GNativeString ns = str;
+   fputs((const char*)ns, stdout);
 }
+
 
 void
 usage()
@@ -152,6 +157,7 @@ int
 main(int argc, char **argv)
 {
   setlocale(LC_ALL,"");
+  setlocale(LC_NUMERIC,"C");
   djvu_programname(argv[0]);
   GArray<GUTF8String> dargv(0,argc-1);
   for(int i=0;i<argc;++i)

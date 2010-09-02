@@ -53,8 +53,8 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: GString.cpp,v 1.27 2009/05/17 23:57:42 leonb Exp $
-// $Name: release_3_5_22 $
+// $Id: GString.cpp,v 1.29 2009/12/29 16:26:19 leonb Exp $
+// $Name: release_3_5_23 $
 
 // From: Leon Bottou, 1/31/2002
 // This file has very little to do with my initial implementation.
@@ -1299,7 +1299,7 @@ GStringRep::giswspace(const unsigned long w)
 #if HAS_WCTYPE
   return iswspace((wchar_t)w);
 #else
-  if (w & ~0xff) || isspace((int)(w & 0xff));
+  return (w & ~0xff) || isspace((int)(w & 0xff));
 #endif
 }
 
@@ -1876,10 +1876,10 @@ GStringRep::UTF8::toNative(const EscapeMode escape) const
         {
           sprintf((char *)r,"&#%lu;",(unsigned long)w0);
           r+=strlen((char *)r);
-        }else
+        }
+        else
         {
-          r=buf;
-          break;
+          *r++ = '?';
         }
       }
     }

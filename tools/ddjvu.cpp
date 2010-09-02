@@ -53,7 +53,7 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 // 
-// $Id: ddjvu.cpp,v 1.39 2009/02/13 09:46:27 leonb Exp $
+// $Id: ddjvu.cpp,v 1.45 2010/08/14 19:06:00 leonb Exp $
 
 
 /* Program ddjvu has been rewritten to use the ddjvuapi only.
@@ -77,20 +77,13 @@
 # include <sys/types.h>
 # include <unistd.h>
 #endif
+#if defined(WIN32) && !defined(__CYGWIN32__)
+# include <io.h>
+#endif
 
 #include "libdjvu/ddjvuapi.h"
 #include "tiff2pdf.h"
 
-#if defined(WIN32) && !defined(__CYGWIN32__)
-# include <io.h>
-# define dup     _dup
-# define lseek   _lseek
-# define open    _open
-# define close   _close
-# define mktemp  _mktemp
-# define O_CREAT _O_CREAT
-# define O_RDWR  _O_RDWR
-#endif
 
 #if HAVE_PUTC_UNLOCKED
 # undef putc
@@ -247,7 +240,7 @@ render(ddjvu_page_t *page, int pageno)
   int dpi = ddjvu_page_get_resolution(page);
   ddjvu_page_type_t type = ddjvu_page_get_type(page);
   char *image = 0;
-  char white = 0xFF;
+  char white = (char)0xFF;
   int rowsize;
 #if HAVE_TIFF
   int compression = COMPRESSION_NONE;
@@ -334,6 +327,8 @@ render(ddjvu_page_t *page, int pageno)
     case 'f':
 #if HAVE_TIFF
       compression = COMPRESSION_NONE;
+      if (flag_quality >= 1000)
+        break;
 # ifdef CCITT_SUPPORT
       if (style==DDJVU_FORMAT_MSBTOLSB 
           && TIFFFindCODEC(COMPRESSION_CCITT_T6))
@@ -589,7 +584,7 @@ dopage(int pageno)
       if (tiff) 
         {
           if (! TIFFWriteDirectory(tiff))
-            die(i18n("Problem writing TIFF directory."));
+            die(i18n("Problem writing directory in temporary TIFF file."));
         }
       else
         {
@@ -599,14 +594,20 @@ dopage(int pageno)
             die(i18n("Out of memory."));
           strcpy(tempfilename, outputfilename);
           strcat(tempfilename, ".XXXXXX");
-# if HAVE_MKSTEMP
-          tiffd = mkstemp(tempfilename);
+          tiff = 0;
+# ifdef WIN32
+          if (_mktemp(tempfilename))
+            tiff = TIFFOpen(tempfilename,"w");
+# elif HAVE_MKSTEMP
+          if ((tiffd = mkstemp(tempfilename)) >= 0)
+            tiff = TIFFFdOpen(tiffd, tempfilename, "w");
 # else
           if (mktemp(tempfilename))
-            tiffd = open(tempfilename, O_RDWR|O_CREAT);
+            if ((tiffd = open(tempfilename, O_RDWR|O_CREAT)) >= 0)
+              tiff = TIFFFdOpen(tiffd, tempfilename, "w");
 # endif
-          if (tiffd < 0 || ! (tiff = TIFFFdOpen(tiffd, tempfilename, "w")))
-            die(i18n("Cannot create temporary tiff file '%s'."), tempfilename);
+          if (! tiff)
+            die(i18n("Cannot create temporary TIFF file '%s'."), tempfilename);
         }
 #else
       die(i18n("PDF output is not compiled"));
@@ -957,7 +958,9 @@ parse_option(int argc, char **argv, int i)
         die(i18n(errdupl), opt);
       else if (!arg) 
         flag_quality = 100;
-      else 
+      else if (!strcmp(arg,"uncompressed"))
+        flag_quality = 1000;
+      else
         {
           flag_quality = strtol(arg,&end,10);
           if (*end || flag_quality<25 || flag_quality>150)
@@ -1019,17 +1022,24 @@ main(int argc, char **argv)
 #if HAVE_TIFF2PDF
   if (tiff && tiffd >= 0 && tempfilename)
     {
-      int fd = dup(tiffd);
       if (! TIFFFlush(tiff))
         die(i18n("Error while flushing TIFF file."));
+      if (flag_verbose)
+        fprintf(stderr,i18n("Converting temporary TIFF to PDF.\n"));
+#ifdef WIN32
+      TIFFClose(tiff);
+      if (!(tiff = TIFFOpen(tempfilename, "r")))
+        die(i18n("Cannot reopen temporary TIFF file '%s'."), tempfilename);
+#else
+      // more elaborate method to work with mkstemp()
+      int fd = dup(tiffd);
       TIFFClose(tiff);
       close(tiffd);
       tiffd = fd;
-      if (flag_verbose)
-        fprintf(stderr,i18n("Converting temporary TIFF to PDF.\n"));
       lseek(tiffd, 0, SEEK_SET);
-      if (! (tiff = TIFFFdOpen(tiffd, tempfilename, "r")))
-        die(i18n("Cannot reopen temporary tiff file '%s'."), tempfilename);
+      if (tiffd < 0 || !(tiff = TIFFFdOpen(tiffd, tempfilename, "r")))
+        die(i18n("Cannot reopen temporary TIFF file '%s'."), tempfilename);
+#endif
       if (! (fout = fopen(outputfilename, "wb")))
         die(i18n("Cannot open output file '%s'."), outputfilename);
       const char *args[3];

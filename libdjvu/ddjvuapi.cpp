@@ -53,7 +53,7 @@
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
 
-/* $Id: ddjvuapi.cpp,v 1.91 2009/05/17 23:57:42 leonb Exp $ */
+/* $Id: ddjvuapi.cpp,v 1.96 2009/12/29 11:02:51 leonb Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -120,12 +120,6 @@ using namespace DJVU;
 
 #include "miniexp.h"
 #include "ddjvuapi.h"
-
-#if !defined(AUTOCONF) || HAVE_STDINT_H
-# include <stdint.h>
-#elif HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
 
 
 // ----------------------------------------
@@ -343,7 +337,12 @@ ddjvu_context_create(const char *programname)
   ddjvu_context_t *ctx = 0;
   G_TRY
     {
+#ifdef LC_ALL
       setlocale(LC_ALL,"");
+# ifdef LC_NUMERIC
+      setlocale(LC_NUMERIC, "C");
+# endif
+#endif
       if (programname)
         djvu_programname(programname);
       DjVuMessage::use_language();
@@ -977,17 +976,21 @@ ddjvu_document_create(ddjvu_context_t *ctx,
   return d;
 }
 
-ddjvu_document_t *
-ddjvu_document_create_by_filename(ddjvu_context_t *ctx,
-                                  const char *filename,
-                                  int cache)
+static ddjvu_document_t *
+ddjvu_document_create_by_filename_imp(ddjvu_context_t *ctx,
+                                      const char *filename,
+                                      int cache, int utf8)
 {
   ddjvu_document_t *d = 0;
   G_TRY
     {
       DjVuFileCache *xcache = ctx->cache;
       if (! cache) xcache = 0;
-      GURL gurl = GURL::Filename::UTF8(filename);
+      GURL gurl;
+      if (utf8) 
+        gurl = GURL::Filename::UTF8(filename);
+      else
+        gurl = GURL::Filename::Native(filename);
       d = new ddjvu_document_s;
       ref(d);
       GMonitorLock lock(&d->monitor);
@@ -1010,6 +1013,22 @@ ddjvu_document_create_by_filename(ddjvu_context_t *ctx,
     }
   G_ENDCATCH;
   return d;
+}
+
+ddjvu_document_t *
+ddjvu_document_create_by_filename(ddjvu_context_t *ctx,
+                                  const char *filename,
+                                  int cache)
+{
+  return ddjvu_document_create_by_filename_imp(ctx,filename,cache,0);
+}
+
+ddjvu_document_t *
+ddjvu_document_create_by_filename_utf8(ddjvu_context_t *ctx,
+                                       const char *filename,
+                                       int cache)
+{
+  return ddjvu_document_create_by_filename_imp(ctx,filename,cache,1);
 }
 
 ddjvu_job_t *
@@ -1583,6 +1602,7 @@ ddjvu_page_s::status()
   if (! img)
     return DDJVU_JOB_NOTSTARTED;        
   DjVuFile *file = img->get_djvu_file();
+  DjVuInfo *info = img->get_info();
   if (! file)
     return DDJVU_JOB_NOTSTARTED;
   else if (file->is_decode_stopped())
@@ -1590,7 +1610,7 @@ ddjvu_page_s::status()
   else if (file->is_decode_failed())
     return DDJVU_JOB_FAILED;
   else if (file->is_decode_ok())
-    return DDJVU_JOB_OK;
+    return (info) ? DDJVU_JOB_OK : DDJVU_JOB_FAILED;
   else if (file->is_decoding())
     return DDJVU_JOB_STARTED;
   return DDJVU_JOB_NOTSTARTED;
