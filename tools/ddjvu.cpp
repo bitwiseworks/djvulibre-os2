@@ -77,7 +77,7 @@
 # include <sys/types.h>
 # include <unistd.h>
 #endif
-#if defined(WIN32) && !defined(__CYGWIN32__)
+#if (defined(WIN32) && !defined(__CYGWIN32__)) || defined(__OS2__)
 # include <io.h>
 #endif
 

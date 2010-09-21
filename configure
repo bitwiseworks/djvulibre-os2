@@ -16809,7 +16809,7 @@ fi
 
   # Process specification
   if test x$ac_tiff = xyes ; then
-     test x${TIFF_LIBS+set} != xset && TIFF_LIBS="-ltiff"
+     test x${TIFF_LIBS+set} != xset && TIFF_LIBS="-ltiff -ljpeg -lz"
   elif test x$ac_tiff != xno ; then
      test x${TIFF_LIBS+set} != xset && TIFF_LIBS="-L$ac_tiff/lib -ltiff"
      test x${TIFF_CFLAGS+set} != xset && TIFF_CFLAGS="-I$ac_tiff/include"

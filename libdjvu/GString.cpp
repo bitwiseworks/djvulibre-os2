@@ -665,6 +665,7 @@ GBaseString::UTF8ToNative(
       }
 #endif
   }
+
   return GNativeString(retval);
 }
 
