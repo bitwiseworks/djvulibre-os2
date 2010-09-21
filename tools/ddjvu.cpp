@@ -617,7 +617,7 @@ dopage(int pageno)
     {
       if (! strcmp(outputfilename,"-")) {
         fout = stdout;
-#if defined(__CYGWIN32__)
+#if defined(__CYGWIN32__) || defined(__OS2__)
         setmode(fileno(fout), O_BINARY);
 #elif defined(WIN32)
         _setmode(_fileno(fout), _O_BINARY);
@@ -755,7 +755,7 @@ usage()
          "Usage: ddjvu [options] [<djvufile> [<outputfile>]]\n\n"
          "Options:\n"
          "  -verbose          Prints various informational messages.\n"
-         "  -format=FMT       Selects output format: pbm,pgm,ppm,pnm,rle,tiff.\n"
+         "  -format=FMT       Selects output format: pbm,pgm,ppm,pnm,rle,tiff,pdf.\n"
          "  -scale=N          Selects display scale.\n"
          "  -size=WxH         Selects size of rendered image.\n"
          "  -subsample=N      Selects direct subsampling factor.\n"
