@@ -54,8 +54,6 @@
 //C- +------------------------------------------------------------------
 */
 
-/* $Id: vertex.bm,v 1.3 2007/03/25 20:48:27 leonb Exp $ */
-
 #define vertex_width 14
 #define vertex_height 14
 #define vertex_x 7

@@ -52,8 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: djvutxt.cpp,v 1.16 2008/08/06 12:21:23 leonb Exp $
 
 
 /* Program djvutxt has been rewritten to use the ddjvuapi only.

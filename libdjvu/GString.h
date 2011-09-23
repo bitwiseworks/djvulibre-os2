@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-//
-// $Id: GString.h,v 1.28 2009/07/30 01:49:02 leonb Exp $
-// $Name: release_3_5_23 $
 
 #ifndef _GSTRING_H_
 #define _GSTRING_H_
@@ -104,8 +101,7 @@
 // attempt to use the type system to enforce coding policies.
 // This could be fixed.  But there are better things to do in djvulibre.
     
-    @version
-    #$Id: GString.h,v 1.28 2009/07/30 01:49:02 leonb Exp $# */
+*/
 //@{
 
 
@@ -117,6 +113,7 @@
 #ifdef WIN32
 # include <windows.h>
 # define HAS_WCHAR 1
+# define HAS_WCTYPE 1
 # define HAS_MBSTATE 1
 #endif
 

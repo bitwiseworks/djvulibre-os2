@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: saved_data.h,v 1.8 2007/03/25 20:48:28 leonb Exp $
-// $Name: release_3_5_22 $
 
 #ifndef HDR_SAVED_DATA
 #define HDR_SAVED_DATA

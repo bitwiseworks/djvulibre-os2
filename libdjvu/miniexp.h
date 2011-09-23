@@ -15,7 +15,6 @@
 // GNU General Public License for more details.
 // -------------------------------------------------------------------
 */
-/* $Id: miniexp.h,v 1.23 2009/11/13 21:54:04 leonb Exp $ */
 
 #ifndef MINIEXP_H
 #define MINIEXP_H

@@ -1,5 +1,5 @@
 %define release 1
-%define version 3.5.23
+%define version 3.5.24
 
 Summary: DjVu viewers, encoders and utilities.
 Name: djvulibre
@@ -62,63 +62,22 @@ find %{buildroot}%{_libdir} -name "*.so*" -exec chmod 755 {} \;
 # Quick cleanup of the docs
 rm -rf doc/CVS 2>/dev/null || :
 
-# Remove symlinks to djview when there are alternatives
-if test -x /usr/sbin/update-alternatives ; then
-  test -h %{buildroot}%{_bindir}/djview \
-    && rm %{buildroot}%{_bindir}/djview
-  test -h %{buildroot}%{_mandir}/man1/djview.1 \
-    && rm %{buildroot}%{_mandir}/man1/djview.1
-fi
-
 %clean
 rm -rf %{buildroot}
 
 %post 
 # LIBS: Run ldconfig
 /sbin/ldconfig
-# ALTERNATIVES
-if test -x /usr/sbin/update-alternatives ; then
-  m1=`ls -1 %{_mandir}/man1/djview3.* | head -1`
-  m2=`echo $m1 | sed -e 's/djview3/djview/'`
-  /usr/sbin/update-alternatives \
-    --install %{_bindir}/djview djview %{_bindir}/djview3 103 \
-    --slave $m2 `basename $m2` $m1
-fi
 # MIME TYPES
 test -x /usr/share/djvu/osi/desktop/register-djvu-mime &&
   /usr/share/djvu/osi/desktop/register-djvu-mime install 2>/dev/null
-# MENU
-test -x /usr/share/djvu/djview3/desktop/register-djview-menu &&
-  /usr/share/djvu/djview3/desktop/register-djview-menu install 2>/dev/null
-# HACK: Create links to nsdejavu.so in mozilla dirs
-( for n in %{_prefix}/lib/mozilla*  ; do \
-  if [ -d $n ] ; then \
-   test -d $n/plugins || mkdir $n/plugins ; \
-   test -h $n/plugins/nsdjvu.so && rm $n/plugins/nsdjvu.so ; \
-   test -h $n/plugins/nsdejavu.so && rm $n/plugins/nsdejavu.so ; \
-   ln -s ../../netscape/plugins/nsdejavu.so $n/plugins/nsdejavu.so ; \
- fi ; done ) 2>/dev/null || true
 exit 0
 
 %preun
 if test "$1" = 0 ; then 
- # HACK: Remove links to nsdejavu.so in all mozilla dirs
- ( if [ ! -r %{_prefix}/lib/netscape/plugins/nsdejavu.so ] ; then \
-    for n in %{_prefix}/lib/mozilla* ; do \
-     if [ -h $n/plugins/nsdejavu.so ] ; then \
-      rm $n/plugins/nsdejavu.so ; \
-      rmdir $n/plugins ; \
-   fi ; done ; fi ) 2>/dev/null || true
- # MENU
- test -x /usr/share/djvu/djview3/desktop/register-djview-menu &&
-   /usr/share/djvu/djview3/desktop/register-djview-menu uninstall 2>/dev/null
  # MIME TYPES
  test -x /usr/share/djvu/osi/desktop/register-djvu-mime &&
    /usr/share/djvu/osi/desktop/register-djvu-mime uninstall 2>/dev/null
- # ALTERNATIVES
- if test -x /usr/sbin/update-alternatives ; then
-   /usr/sbin/update-alternatives --remove djview %{_bindir}/djview3
- fi
 fi
 exit 0
 

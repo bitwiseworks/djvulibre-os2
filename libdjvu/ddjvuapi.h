@@ -54,8 +54,6 @@
 //C- +------------------------------------------------------------------
 */
 
-/* $Id: ddjvuapi.h,v 1.70 2010/06/27 20:31:07 leonb Exp $ */
-
 #ifndef DDJVUAPI_H
 #define DDJVUAPI_H
 
@@ -112,8 +110,12 @@ extern "C" {
 
    Version   Change
    -----------------------------
+     20    Added:
+              ddjvu_get_version_string()
+              ddjvu_format_set_white()
+              ddjvu_anno_get_xmp()
      19    Added:
-              ddjvu_document_create_by_filename_utf8
+              ddjvu_document_create_by_filename_utf8()
      18    Added:
               ddjvu_document_get_{anno,pagedump,filedump}()
            Modifed (binary compatible):
@@ -135,7 +137,7 @@ extern "C" {
      14    Initial version.
 */
 
-#define DDJVUAPI_VERSION 19
+#define DDJVUAPI_VERSION 20
 
 typedef struct ddjvu_context_s    ddjvu_context_t;
 typedef union  ddjvu_message_s    ddjvu_message_t;
@@ -183,6 +185,14 @@ typedef struct ddjvu_rectmapper_s ddjvu_rectmapper_t;
  */
 
 
+
+/* ddjvu_get_version_string() ---
+   Returns a string that described the underlying code. */
+
+DDJVUAPI const char*
+ddjvu_get_version_string(void);
+
+
 /* ddjvu_context_create ---
    Creates a <ddjvu_context_t> object.
    Argument <programname> is the name of the calling executable. */
@@ -199,6 +209,8 @@ ddjvu_context_create(const char *programname);
 
 DDJVUAPI void 
 ddjvu_context_release(ddjvu_context_t *context);
+
+
 
 
 
@@ -985,6 +997,7 @@ ddjvu_page_get_version(ddjvu_page_t *page);
 DDJVUAPI int
 ddjvu_code_get_version(void);
 
+
 /* ddjvu_page_get_type ---
    Returns the type of the page data.
    Calling this function before the termination of the
@@ -1248,6 +1261,16 @@ ddjvu_format_set_ditherbits(ddjvu_format_t *format, int bits);
 DDJVUAPI void
 ddjvu_format_set_gamma(ddjvu_format_t *format, double gamma);
 
+
+/* ddjvu_format_set_white ---
+   Sets the whitepoint of the display for which the pixels are
+   intended.  This will be combined with the gamma stored in
+   DjVu documents in order to compute a suitable color
+   correction.  The default value is 0xff,0xff,0xff. */
+
+DDJVUAPI void
+ddjvu_format_set_white(ddjvu_format_t *format, 
+                       unsigned char b, unsigned char g, unsigned char r);
 
 /* ddjvu_format_release ---
    Release a reference to a <ddjvu_format_t> object.
@@ -1587,6 +1610,15 @@ ddjvu_anno_get_metadata_keys(miniexp_t annotations);
 DDJVUAPI const char *
 ddjvu_anno_get_metadata(miniexp_t annotations, miniexp_t key);
 
+
+/* ddjvu_anno_get_xmp --
+   Parse the annotations and returns the xmp metadata string.
+   The string remains allocated as long as the 
+   annotations s-expression remain allocated.
+   Returns zero if no such key is present. */
+
+DDJVUAPI const char *
+ddjvu_anno_get_xmp(miniexp_t annotations, miniexp_t xmp);
 
 
 /* -------------------------------------------------- */

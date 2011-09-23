@@ -52,8 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: djvups.cpp,v 1.22 2008/07/02 23:16:14 leonb Exp $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

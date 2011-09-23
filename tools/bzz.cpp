@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: bzz.cpp,v 1.9 2010/05/27 20:47:56 leonb Exp $
-// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -86,8 +83,7 @@
     General purpose compression/decompression program
     @author
     L\'eon Bottou <leonb@research.att.com> -- initial implementation
-    @version
-    $Id: bzz.cpp,v 1.9 2010/05/27 20:47:56 leonb Exp $ */
+*/
 //@{
 //@}
 

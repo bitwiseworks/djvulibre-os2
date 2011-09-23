@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: cjb2.cpp,v 1.21 2010/05/27 20:47:57 leonb Exp $
-// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -101,8 +98,7 @@
     Paul Howard <pgh@research.att.com>\\
     Pascal Vincent <vincentp@iro.umontreal.ca>\\
     Ilya Mezhirov <ilya@mezhirov.mccme.ru>
-    @version
-    $Id: cjb2.cpp,v 1.21 2010/05/27 20:47:57 leonb Exp $ */
+*/
 //@{
 //@}
 

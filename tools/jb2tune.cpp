@@ -52,8 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: jb2tune.cpp,v 1.12 2007/03/25 20:48:36 leonb Exp $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

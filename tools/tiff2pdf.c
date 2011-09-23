@@ -14,9 +14,7 @@
 //C- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //C- GNU General Public License for more details.
 //C-  ------------------------------------------------------------------
-//
-// $Id: tiff2pdf.c,v 1.5 2010/06/18 05:28:59 leonb Exp $ */
-
+*/
 /* The following code is derived from program "tiff2pdf"
  * whose copyright notice is reproduced below.
  * Changes were made to make it independent from the private

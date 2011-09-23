@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: qt_imager.h,v 1.8 2007/03/25 20:48:23 leonb Exp $
-// $Name: release_3_5_22 $
 
 #ifndef HDR_QT_IMAGER
 #define HDR_QT_IMAGER

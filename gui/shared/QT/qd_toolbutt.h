@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: qd_toolbutt.h,v 1.8 2007/03/25 20:48:27 leonb Exp $
-// $Name: release_3_5_22 $
 
 #ifndef HDR_QD_TOOLBUTT
 #define HDR_QD_TOOLBUTT
