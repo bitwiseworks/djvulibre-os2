@@ -1,33 +1,5 @@
 #!/usr/bin/make -f
 
-DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
-DEB_BUILD_OPTIONS   ?= debug nostrip
-
-ifeq ($(DEB_HOST_GNU_TYPE),m68k-linux-gnu) # m68k GCC 4.0 breakage
-	CFLAGS = -Wall -Wno-non-virtual-dtor
-else
-	CFLAGS = -Wall
-endif
-
-ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
-	CFLAGS += -g
-else
-	CFLAGS += -DNDEBUG
-endif
-
-ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
-	INSTALL_PROGRAM += -s
-endif
-
-ifeq ($(DEB_HOST_GNU_TYPE),m68k-linux-gnu) # m68k GCC 4.0 breakage
-	CFLAGS += -O2
-else ifeq ($(DEB_HOST_GNU_TYPE),alpha-linux-gnu) # alpha GCC 4.1/4.2 breakage
-	CFLAGS += -O0
-else
-	CFLAGS += -O2
-endif
-
 # extract library major version from source build system
 libver0 := $(shell egrep '^LIBDJVU_VER_COMPAT=[0-9]+$$' configure \
 		   | head -1 \
@@ -45,13 +17,26 @@ endif
 testlibver:
 	@echo library major version: upstream $(libver0), debian $(libver) $(libver1) $(libver2)
 
-config.status: configure
-	dh_testdir
-	dh_auto_configure -- --enable-djview --disable-desktopfiles --enable-static --enable-shared
+build clean install binary-arch binary-indep binary:
+	dh $@ --with autotools_dev --parallel
 
-build: build-stamp
-build-stamp: config.status
-	dh_testdir
+configure_options += --disable-djview
+configure_options += --disable-desktopfiles
+configure_options += --enable-static
+configure_options += --enable-shared
+ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+configure_options += --enable-debug
+else ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+# consider modifying the autoconf scripts to accept a --disable-optimization flag
+configure_options += --enable-debug
+endif
+
+override_dh_auto_configure:
+	dh_auto_configure -- $(configure_options)
+
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+
+override_dh_auto_make:
 	$(MAKE) -k depend	# otherwise a missing Makefile.dep blows up
 # deliciously monstrous libtool workaround by Cthulhu via H.P.Lovecraft@ubuntu.com,
 # http://patches.ubuntu.com/d/djvulibre/djvulibre_3.5.22-1ubuntu1.patch
@@ -59,37 +44,13 @@ ifeq ($(DEB_HOST_GNU_TYPE),arm-linux-gnueabi)
 	sed -i.orig '/^LIBS/s/-lm/-lm -lsupc++ -lgcc/' libdjvu/Makefile
 	touch -r libdjvu/Makefile.orig libdjvu/Makefile
 endif
-	$(MAKE) OPTS="$(CFLAGS)" # hotwire compiler options
-	touch build-stamp
+	dh_auto_make
 
-clean:
-	dh $@
-	@echo push in latest config support files
-	-test -r /usr/share/misc/config.sub && \
-	  cp -f /usr/share/misc/config.sub config/config.sub
-	-test -r /usr/share/misc/config.guess && \
-	  cp -f /usr/share/misc/config.guess config/config.guess
-
-plugsubdir=netscape/plugins-libc6
-plug=$(plugsubdir)/nsdejavu.so
-
-install: install-stamp
-install-stamp: build-stamp
-	dh_testdir
-	dh_prep
-	dh_installdirs
-	$(MAKE) install	\
-		DESTDIR=$(CURDIR)/debian/tmp \
-		plugindir=/usr/lib/$(plugsubdir)
-	chmod +x debian/tmp/usr/bin/any2djvu
+override_dh_auto_install:
+	dh_auto_install
 	mkdir --parents debian/tmp/usr/lib/cgi-bin
-	cp --preserve=timestamps debian/djvuserve.sh \
+	cp --preserve=mode,timestamps debian/djvuserve.sh \
 		debian/tmp/usr/lib/cgi-bin/djvuserve
-	chmod +x debian/tmp/usr/lib/cgi-bin/djvuserve
-	mkdir --parents      debian/tmp/usr/lib/mozilla/plugins
-	ln -sf ../../$(plug) debian/tmp/usr/lib/mozilla/plugins/
-	mkdir --parents      debian/tmp/usr/lib/mozilla-firefox/plugins
-	ln -sf ../../$(plug) debian/tmp/usr/lib/mozilla-firefox/plugins/
 	@echo "install djvu icon and mime types"
 	for n in 22 32 48 64 ; do \
 	  d="debian/tmp/usr/share/icons/hicolor/$${n}x$${n}/mimetypes"; \
@@ -107,43 +68,22 @@ install-stamp: build-stamp
 	mkdir --parents debian/tmp/usr/share/mimelnk/image
 	install --mode=644 desktopfiles/vnd.djvu.desktop \
 	  debian/tmp/usr/share/mimelnk/image/
-	@echo "install djview3 icon and menu"
-	mkdir --parents debian/tmp/usr/share/icons/hicolor/scalable/apps
-	install --mode=644 desktopfiles/hi-djview3.svgz \
-	  debian/tmp/usr/share/icons/hicolor/scalable/apps/djvulibre-djview3.svgz
-	mkdir --parents debian/tmp/usr/share/icons/hicolor/32x32/apps
-	install --mode=644 debian/djvulibre-djview3.xpm \
-	  debian/tmp/usr/share/icons/hicolor/32x32/apps/
-	mkdir --parents debian/tmp/usr/share/applications
-	install --mode=755 desktopfiles/djvulibre-djview3.desktop \
-	  debian/tmp/usr/share/applications/
-	touch install-stamp
 
-binary: binary-indep binary-arch
-
-binary-indep:
-
-binary-arch:
-	dh $@ --before auto_configure
-	dh $@ --after auto_test --before auto_install
-	debian/rules install
-	dh $@ --after auto_install --until dh_install
-	@echo remove from djvulibre-bin, already in djview3
-	find debian/djvulibre-bin -name djview3\* -print -delete
-	@echo remove from djvulibre-bin, just links
-	find debian/djvulibre-bin -name djview\* -print -delete
-	@echo remove from djvulibre-bin, already in djvulibre-plugin
-	find debian/djvulibre-bin -name nsdejavu\* -print -delete
+override_dh_install:
+	dh_install
 	@echo remove from djvulibre-bin, already in djvuserve
 	find debian/djvulibre-bin -name djvuserve\* -print -delete
 # 	@echo "remove from djvulibre-bin, not in Debian: needs gsdjvu, direct complaints to AT&T"
 # 	find debian/djvulibre-bin -name djvudigital\* -print -delete
-	dh $@ --after dh_install --before compress
-	dh_compress --exclude=.djvu
-	dh $@ --after compress --before strip
-	dh_strip --dbg-package=djvulibre-dbg
-	dh $@ --after strip --before makeshlibs
-	dh_makeshlibs --version-info --exclude=/plugins
-	dh $@ --after makeshlibs
 
-.PHONY: build clean binary-indep binary-arch binary install testlibver
+override_dh_compress:
+	dh_compress --exclude=.djvu
+
+override_dh_strip:
+	dh_strip --dbg-package=djvulibre-dbg
+
+override_dh_makeshlibs:
+	dh_makeshlibs --version-info --exclude=/plugins
+
+.PHONY: build clean install binary-arch binary-indep binary
+.PHONY: testlibver

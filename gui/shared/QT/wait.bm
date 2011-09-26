@@ -54,9 +54,6 @@
 //C- +------------------------------------------------------------------
 */
 
-/* $Id: wait.bm,v 1.4 2007/03/26 03:09:16 leonb Exp $ */
-
-
 #define wait_width 32
 #define wait_height 32
 #define wait_x 15

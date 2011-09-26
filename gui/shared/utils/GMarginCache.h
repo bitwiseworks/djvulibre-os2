@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: GMarginCache.h,v 1.10 2008/08/05 20:51:37 bpearlmutter Exp $
-// $Name: release_3_5_22 $
 
 #ifndef HDR_GMARGIN_CACHE
 #define HDR_GMARGIN_CACHE

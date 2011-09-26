@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: djvm.cpp,v 1.13 2010/05/27 20:47:57 leonb Exp $
-// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -128,8 +125,7 @@
     DjVu multipage documents creator.
     @author
     Andrei Erofeev <eaf@geocities.com>
-    @version
-    #$Id: djvm.cpp,v 1.13 2010/05/27 20:47:57 leonb Exp $# */
+*/
 //@{
 //@}
 

@@ -52,8 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: jb2tune.h,v 1.3 2007/03/25 20:48:36 leonb Exp $
 
 #ifndef _JB2TUNE_H
 #define _JB2TUNE_H

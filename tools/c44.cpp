@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: c44.cpp,v 1.15 2010/05/27 20:47:57 leonb Exp $
-// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -210,8 +207,7 @@
     DjVu IW44 wavelet encoder.
     @author
     L\'eon Bottou <leonb@research.att.com>
-    @version
-    #$Id: c44.cpp,v 1.15 2010/05/27 20:47:57 leonb Exp $# */
+*/
 //@{
 //@}
 

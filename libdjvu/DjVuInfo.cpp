@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: DjVuInfo.cpp,v 1.12 2010/02/19 16:20:36 leonb Exp $
-// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

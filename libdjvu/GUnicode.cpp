@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: GUnicode.cpp,v 1.15 2009/07/30 01:59:28 leonb Exp $
-// $Name: release_3_5_23 $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

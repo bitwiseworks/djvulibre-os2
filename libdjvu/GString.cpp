@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: GString.cpp,v 1.29 2009/12/29 16:26:19 leonb Exp $
-// $Name: release_3_5_23 $
 
 // From: Leon Bottou, 1/31/2002
 // This file has very little to do with my initial implementation.
@@ -1246,17 +1243,19 @@ GStringRep::getbuf(int n) const
 }
 
 const char *
-GStringRep::isCharType(
-  bool (*xiswtest)(const unsigned long wc), const char *ptr, const bool reverse) const
+GStringRep::isCharType(bool (*xiswtest)(const unsigned long wc), 
+                       const char *ptr, 
+                       const bool reverse) const
 {
-  char const * xptr=ptr;
-  const unsigned long w=getValidUCS4(xptr);
-  if((ptr != xptr)
-    &&(((sizeof(wchar_t) == 2)&&(w&~0xffff))
-      ||(reverse?(!xiswtest(w)):xiswtest(w))))
-  {
-    ptr=xptr;
-  }
+  const char *xptr = ptr;
+  unsigned long w=getValidUCS4(xptr);
+  if(ptr != xptr)
+    {
+      if (sizeof(wchar_t) == 2)
+        w &= 0xffff;
+      if (reverse ^ xiswtest(w))
+        ptr = xptr;
+    }
   return ptr;
 }
 
@@ -1296,9 +1295,9 @@ bool
 GStringRep::giswspace(const unsigned long w)
 {
 #if HAS_WCTYPE
-  return iswspace((wchar_t)w);
+  return !!iswspace((wchar_t)w);
 #else
-  return (w & ~0xff) || isspace((int)(w & 0xff));
+  return (w & ~0xff) ? false : !!isspace((int)(w & 0xff));
 #endif
 }
 
@@ -1306,9 +1305,9 @@ bool
 GStringRep::giswupper(const unsigned long w)
 {
 #if HAS_WCTYPE
-  return iswupper((wchar_t)w);
+  return !!iswupper((wchar_t)w);
 #else
-  return (w & ~0xff) || isupper((int)(w & 0xff));
+  return (w & ~0xff) ? false : !!isupper((int)(w & 0xff));
 #endif
 }
 
@@ -1316,9 +1315,9 @@ bool
 GStringRep::giswlower(const unsigned long w)
 {
 #if HAS_WCTYPE
-  return iswlower((wchar_t)w);
+  return !!iswlower((wchar_t)w);
 #else
-  return (w & ~0xff) || islower((int)(w & 0xff));
+  return (w & ~0xff) ? false : !!islower((int)(w & 0xff));
 #endif
 }
 

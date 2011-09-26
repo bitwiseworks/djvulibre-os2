@@ -15,9 +15,4 @@ give it up.  Just ask.  (In fact, that goes for all my packages!)  If
 someone does take it over, I'm happy to serve as an interface to the
 upstream authors as I am in contact with them professionally anyway.
 
-The Debian CVS repository is now shared with upstream.
- cvs -d :ext:UID@djvu.cvs.sourceforge.net:/cvsroot/djvu checkout djvulibre-3.5
-This makes the appropriate build command something like
- cvs-buildpackage -U release_3_5_22 -M djvulibre-3.5 -F
-
- -- Barak A. Pearlmutter <bap@debian.org>, Wed, 27 Jan 2010 12:01:41 +0100
+ -- Barak A. Pearlmutter <bap@debian.org>, Sat, 12 Feb 2011 13:23:34 +0000

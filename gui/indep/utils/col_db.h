@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: col_db.h,v 1.9 2008/03/16 14:07:06 leonb Exp $
-// $Name: release_3_5_22 $
 
 #ifndef HDR_COL_DB
 #define HDR_COL_DB
