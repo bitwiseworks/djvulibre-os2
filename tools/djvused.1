@@ -81,6 +81,15 @@ This is similar to executing command
 .B save
 immediately before terminating the program.
 .TP
+.BI "-u"
+Cause
+.B djvused
+to print hidden text and annotations as UTF-8 
+instead of encoding non-ASCII characters with octal escape sequences
+for maximal portability. This option is convenient for 
+manually editing or viewing the djvused output.
+This option also causes the emission of an UTF-8 BOM under Windows.
+.TP
 .BI "-n"
 Cause 
 .B djvused 
@@ -389,6 +398,29 @@ by command
 .BR print-meta . 
 When the optional argument is omitted, the
 program reads the annotation data from the djvused script itself
+until reaching an end-of-file or a line containing a single period.
+.TP
+.BI "print-xmp"
+Print the XMP metadata string contained in 
+the annotation chunk of the selected component file.
+This command displays in fact a subset of the 
+information printed by command
+.BR print-ant .
+.TP
+.BI "remove-xmp"
+Removes the XMP tag from the annotation chunk of the selected component file.
+.TP
+.BI "set-xmp [" "xmpfile" "]"
+Set the XMP metadata part of the annotations of the selected component file.
+The remaining part of the annotations is left unchanged.
+The optional argument
+.I xmpfile
+names a file containing the XMP metadata in a format 
+similar to that produced
+by command
+.BR print-xmp . 
+When the optional argument is omitted, the
+program reads the XMP annotation data from the djvused script itself
 until reaching an end-of-file or a line containing a single period.
 .TP
 .BI "output-all"
