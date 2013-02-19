@@ -162,6 +162,7 @@
 #include "jb2tune.h"
 
 #include <locale.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 #undef MIN
@@ -1287,7 +1288,7 @@ Comments::textmark(GP<TxtMark> mark)
       int shx = (mark->x - lastx) * 100 / fontsize;
       int shy = (mark->y - lasty) * 100 / fontsize;
       int inter = dirx * shx + diry * shy;
-      if ( (dirx == lastdirx) && (diry == lastdiry) &&
+      if ( (dirx || diry) && (dirx == lastdirx) && (diry == lastdiry) &&
            (inter > -150) && (inter < 300) && 
            abs(diry * shx + dirx * shy) < 80 )
         mark->inter = inter;
@@ -1397,14 +1398,11 @@ Comments::textflush(void)
   lastline.empty();
 }
 
-static ByteStream *minilisp_outbs = 0;
-
 static int 
-minilisp_outfunc(const char *s)
+bytestream_fputs(miniexp_io_t *io, const char *s)
 {
-  if (minilisp_outbs)
-    return minilisp_outbs->write((const void*)s, strlen(s));
-  return -1;
+  ByteStream *outbs = (ByteStream*)io->data[0];
+  return (outbs) ? outbs->write((const void*)s, strlen(s)) : -1;
 }
 
 void 
@@ -1428,8 +1426,10 @@ Comments::make_chunks(IFFByteStream &iff)
       iff.put_chunk("ANTz");
       {
         GP<ByteStream> bsb = BSByteStream::create(iff.get_bytestream(), 50);
-        minilisp_outbs = bsb;
-        minilisp_puts = minilisp_outfunc;
+        miniexp_io_t io;
+        miniexp_io_init(&io);
+        io.fputs = bytestream_fputs;
+        io.data[0] = (void*)(ByteStream*)bsb;
         minivar_t exor = miniexp_cons(miniexp_symbol("xor"),miniexp_nil);
         minivar_t zstr = miniexp_string("");
         for (GPosition p = links; p; ++p)
@@ -1447,10 +1447,8 @@ Comments::make_chunks(IFFByteStream &iff)
             expr = miniexp_cons(zstr, expr);
             expr = miniexp_cons(url, expr);
             expr = miniexp_cons(miniexp_symbol("maparea"), expr);
-            miniexp_pprint(expr, 72);
+            miniexp_pprint_r(&io, expr, 72);
           }
-        minilisp_outbs = 0;
-        minilisp_set_output(stdout);
       }
       iff.close_chunk();
     }
