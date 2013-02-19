@@ -73,6 +73,7 @@
 #include "GOS.h"
 #include "GURL.h"
 #include "DjVuMessage.h"
+#include <stddef.h>
 #include <fcntl.h>
 #if defined(WIN32) || defined(__CYGWIN32__) || defined(__OS2__)
 # include <io.h>
