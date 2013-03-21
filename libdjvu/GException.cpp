@@ -110,6 +110,9 @@ GException::GException (const char *xcause, const char *file, int line,
   // It'd hard to track exceptions which seem to go from nowhere
 #ifdef DEBUG_MSG
   DEBUG_MSG("GException::GException(): cause=" << (xcause ? xcause : "unknown") << "\n");
+#if defined(__OS2__) && DEBUGLVL >= 0
+  printf("GException::GException(): cause=%s\n", xcause ? xcause : "unknown");
+#endif
 #endif
   if (xcause && xcause!=outofmemory) 
     {
