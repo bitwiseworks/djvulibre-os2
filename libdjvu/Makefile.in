@@ -13,7 +13,7 @@
 OS2_LA_NAME=djvulibre
 OS2_DLL_NAME=djvu
 OS2_DLL_OBJ=$(OBJS:%.lo=.libs/%.o)
-OS2_DLL_LIBS=-lpthread -ljpeg
+OS2_DLL_LIBS=-lpthread -ljpeg -lstdc++
 
 @SET_MAKE@
 SHELL = @SHELL@

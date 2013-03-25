@@ -2383,6 +2383,9 @@ else
 #else
 # include <assert.h>
 #endif
+#ifdef __OS2__
+# include <string.h>
+#endif
 
 #undef $2
 
