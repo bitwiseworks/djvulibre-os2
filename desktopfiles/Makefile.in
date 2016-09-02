@@ -44,7 +44,8 @@ datadir_djvu = ${datadir}/djvu/osi/desktop
 
 # -------- all
 
-all: icons register-djvu-mime 
+@DESKTOP_YES@all: icons register-djvu-mime 
+@DESKTOP_NO@all:
 
 PNGICONS = hi16-djvu.png hi20-djvu.png hi22-djvu.png hi24-djvu.png \
            hi32-djvu.png hi48-djvu.png hi64-djvu.png hi72-djvu.png \

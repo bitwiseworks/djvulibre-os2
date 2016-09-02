@@ -10,11 +10,6 @@
 #C- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #C- GNU General Public License for more details.
 
-OS2_LA_NAME=djvulibre
-OS2_DLL_NAME=djvu
-OS2_DLL_OBJ=$(OBJS:%.lo=.libs/%.o)
-OS2_DLL_LIBS=-lpthread -ljpeg -lstdc++
-
 @SET_MAKE@
 SHELL = @SHELL@
 VPATH = @srcdir@
@@ -63,7 +58,7 @@ CFLAGS = ${FLAGS} @CPPFLAGS@ @CFLAGS@
 CXXFLAGS =  ${FLAGS} ${CXXPICFLAGS} ${CXXRPOFLAGS} @CPPFLAGS@ @CXXFLAGS@ 
 DLLFLAGS = @DLLFLAGS@
 
-all: ${LIBDJVU_LA} $(OS2_DLL_NAME).dll 
+all: ${LIBDJVU_LA}
 
 install: install-lib install-data install-include install-pkgconfig
 
@@ -151,15 +146,3 @@ Makefile.dep: ${srcdir}/Makefile.dep
 	cp ${srcdir}/Makefile.dep $@
 
 include Makefile.dep
-
-$(OS2_DLL_NAME).dll: lib$(OS2_LA_NAME).la
-	rm -f .libs/$(OS2_DLL_NAME)*.a
-	ar cru .libs/$(OS2_LA_NAME)_s.a $(OS2_DLL_OBJ)
-	echo "LIBRARY $(OS2_DLL_NAME) INITINSTANCE TERMINSTANCE" > $(OS2_DLL_NAME).def
-	echo "DATA MULTIPLE" >> $(OS2_DLL_NAME).def
-	echo "EXPORTS" >> $(OS2_DLL_NAME).def
-	emxexp $(OS2_DLL_OBJ) >> $(OS2_DLL_NAME).def
-	gcc -g -Zbin-files -Zhigh-mem -Zomf -Zdll $(OS2_DLL_NAME).def -o $@ $(OS2_DLL_OBJ) $(OS2_DLL_LIBS) 
-	emximp -o .libs/$(OS2_LA_NAME).a $(OS2_DLL_NAME).def
-	emximp -o .libs/$(OS2_LA_NAME).lib $(OS2_DLL_NAME).def
-	cp $@ .libs
