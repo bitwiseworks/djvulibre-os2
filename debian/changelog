@@ -1,20 +1,131 @@
+djvulibre (3.5.27-0pre1) UNRELEASED; urgency=medium
+
+  * Prepare rev 3.5.27
+
+ -- Leon Bottou <leonb@users.sourceforge.net>  Sun, 08 Feb 2015 14:20:46 -0500
+
+djvulibre (3.5.26-1) experimental; urgency=medium
+
+  * upstream reworked build system, uses automake and pkg-config
+  * move debian vs upstream library version check into dh_testdir
+  * add --list-missing option to dh_install
+  * update upstream git URL
+  * new upstream release
+  * merge upstream patches
+    - afdbb99 acquire global lock while destroying gctls_t
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue, 06 Jan 2015 05:57:36 -0500
+
+djvulibre (3.5.25.4-4) unstable; urgency=medium
+
+  * merge upstream patches
+   - f794f2d meta-data --> metadata.
+   - 6262fcc Update config/libtool.m4 to support ppc64le.
+   - 9e32594 Regenerate autotools files with new config/libtool.m4
+   - 4e62915 Fix to djvutoxml by "Imperatore" (bug 227)
+   - 93a13dd csepdjvu handles utf16 outlines
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 20 Mar 2014 14:23:32 +0000
+
+djvulibre (3.5.25.4-3) unstable; urgency=low
+
+  * remove build alts libtiff{5,4,3}-dev (closes: #735997)
+  * bump standards version
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue, 21 Jan 2014 15:27:16 +0000
+
+djvulibre (3.5.25.4-2) unstable; urgency=low
+
+  * merge upstream patches, including autotools refresh (closes: #722525)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 12 Sep 2013 09:40:49 +0100
+
+djvulibre (3.5.25.4-1) unstable; urgency=low
+
+  * new upstream release
+  * merge upstream changes for crash report, see
+    http://lists.debian.org/debian-devel/2013/06/msg00720.html
+    http://www.forallsecure.com/bug-reports/df37d30856756929f929ec8e508af1a574109c0d/
+  * flush dh-exec overkill
+  * enable full multiarch support
+  * bump standard version
+  * canonicalize development repo urls
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 27 Jun 2013 16:23:00 +0100
+
+djvulibre (3.5.25.3-3) unstable; urgency=low
+
+  * multiarch fix via dh-exec lossage
+  * merge upstream fixes
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 12 Nov 2012 11:06:39 +0000
+
+djvulibre (3.5.25.3-2) unstable; urgency=low
+
+  * remove more X11-related build dependencies
+  * prefer libtiff5-dev (closes: #681914)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue, 17 Jul 2012 23:23:27 +0200
+
+djvulibre (3.5.25.3-1) unstable; urgency=low
+
+  * new upstream release
+  * remove X11-related build dependencies
+  * keep debugging symbols
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun, 17 Jun 2012 20:37:22 +0100
+
+djvulibre (3.5.25.2-4) unstable; urgency=low
+
+  * generalize pre-dependency
+  * remove unused override from debian/rules (closes: #664292)
+  * lower djvudigital default resolution from 600 to 300 dpi (closes: #507539)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun, 08 Apr 2012 23:45:27 +0100
+
+djvulibre (3.5.25.2-3) unstable; urgency=low
+
+  * rsvg-convert not completely plug-compatible replacement (closes: #666475)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sat, 07 Apr 2012 09:10:35 +0100
+
+djvulibre (3.5.25.2-2) unstable; urgency=low
+
+  * switch deprecated rsvg to plug-compatible rsvg-convert (closes: #666475)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sat, 31 Mar 2012 21:51:15 +0100
+
 djvulibre (3.5.25.2-1) unstable; urgency=low
 
+  [ Leon Bottou ]
   * new upstream version
 
- -- Leon Bottou <leon@bottou.org>  Thu, 17 Mar 2012 15:40:22 +0900
+  [ Barak A. Pearlmutter ]
+  * upstream fix for diezechar issue (closes: #664280)
+  * upstream fix for minilisp I/O problem (closes: #664442)
+  * include upstream patch completing man page djvused(1) (closes: #551517)
+  * allow dh_install to work on non-multiarch build
 
-djvulibre (3.5.25.1-1) unstable; urgency=low
-
-  * new upstream version
-
- -- Leon Bottou <leon@bottou.org>  Thu, 17 Mar 2012 11:36:22 +0900
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun, 18 Mar 2012 23:09:59 +0000
 
 djvulibre (3.5.25-1) unstable; urgency=low
 
+  [ Leon Bottou ]
   * new upstream version
 
- -- Leon Bottou <leon@bottou.org>  Thu, 15 Mar 2012 15:32:02 +0900
+  [ Barak A. Pearlmutter ]
+  * bump debian standards version
+  * bump to dh 9
+  * add Leon Bottou as co-maintainer
+  * updates for multiarch
+    - update debian/*.install for multiarch: /usr/lib/ to /usr/lib/ARCH/
+    - ibid for pkgconfig
+    - debian/control shared library Pre-Depends: multiarch-support
+  * use NEWS file as upstream changelog
+  * minor lintian-suggested tweaks to debian/control
+  * merge minor upstream changes
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 16 Mar 2012 16:54:05 +0000
 
 djvulibre (3.5.24-9) unstable; urgency=low
 

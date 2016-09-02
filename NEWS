@@ -1,5 +1,23 @@
-NEW IN VERSION 3.5.25
+NEW IN VERSION 3.5.27
 ------------------------
+- simplified configuration scripts
+- deadlock fixes
+- miniexp under win32 uses tlsalloc instead of _thread vars (pb under xp)
+
+NEW IN VERSION 3.5.26
+------------------------
+- Thread safe miniexp
+- Now using the standard autotools approach (thanks to Vincent Torri).
+- New windows installer (thanks to Konstantin Kravtsov).
+- Fixed Russian code page issues in windows.
+- General speedup thanks to lock-free smart pointers.
+- ddjvu can produce one file per page.
+- djvused can now set the default page orientation.
+- Bug fixes all around.
+
+
+NEW IN VERSION 3.5.25
+---------------------
 - Removed the deprecated djview3 code.
 - Removed the deprecated cothreads code.
 - Removed the unmaintained japanese man pages.
