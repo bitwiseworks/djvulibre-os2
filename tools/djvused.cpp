@@ -60,12 +60,6 @@
 # pragma implementation
 #endif
 
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <locale.h>
 
 #include "IW44Image.h"
 #include "GOS.h"
@@ -81,6 +75,7 @@
 #include "DjVuPort.h"
 #include "DjVuFile.h"
 #include "DjVmNav.h"
+#include "common.h"
 
 static bool modified = false;
 static bool verbose = false;
@@ -396,7 +391,8 @@ get_data_from_file(const char *cmd, ParsingByteStream &pbs, ByteStream &out)
       int c = pbs.get_spaces(true);
       pbs.unget(c);
       char skip[4];
-      char term[4] = "\n.\n";
+      char term0[4] = "\n.\n";
+      char term1[4] = "\r.\r";
       char *s = skip;
       int state = 1;
       while (state < 3) 
@@ -404,7 +400,7 @@ get_data_from_file(const char *cmd, ParsingByteStream &pbs, ByteStream &out)
           c = pbs.get();
           if (c == EOF)
             break;
-          if ( c == term[state] )
+          if ( c == term0[state] || c == term1[state] )
             {
               state += 1;
               *s++ = c;
@@ -554,35 +550,46 @@ command_dump(ParsingByteStream &)
 static void
 print_size(const GP<DjVuFile> &file)
 {
-  const GP<ByteStream> pbs(file->get_djvu_bytestream(false, false));
-  const GP<IFFByteStream> iff(IFFByteStream::create(pbs));
-  GUTF8String chkid;
-  if (! iff->get_chunk(chkid))
-    verror("Selected file contains no data");
-  if (chkid == "FORM:DJVU")
+  GP<DjVuInfo> info = file->info;
+  if (! info)
     {
-      while (iff->get_chunk(chkid) && chkid!="INFO")
-        iff->close_chunk();
-      if (chkid == "INFO")
+      const GP<ByteStream> pbs(file->get_djvu_bytestream(false, false));
+      const GP<IFFByteStream> iff(IFFByteStream::create(pbs));
+      GUTF8String chkid;
+      if (! iff->get_chunk(chkid))
+        verror("Selected file contains no data");
+      if (chkid == "FORM:DJVU")
         {
-          GP<DjVuInfo> info=DjVuInfo::create();
-          info->decode(*iff->get_bytestream());
-          fprintf(stdout,"width=%d height=%d\n", info->width, info->height);
+          while (iff->get_chunk(chkid) && chkid!="INFO")
+            iff->close_chunk();
+          if (chkid == "INFO")
+            { 
+              info = DjVuInfo::create();
+              info->decode(*iff->get_bytestream());
+            }
+        }
+      else if (chkid == "FORM:BM44" || chkid == "FORM:PM44")
+        {
+          while (iff->get_chunk(chkid) && chkid!="BM44" && chkid!="PM44")
+            iff->close_chunk();
+          if (chkid=="BM44" || chkid=="PM44")
+            {
+              GP<IW44Image> junk=IW44Image::create_decode(IW44Image::COLOR);
+              junk->decode_chunk(iff->get_bytestream());
+              fprintf(stdout,"width=%d height=%d\n", 
+                      junk->get_width(), junk->get_height());
+            }
         }
     }
-  else if (chkid == "FORM:BM44" || chkid == "FORM:PM44")
+  if (info)
     {
-      while (iff->get_chunk(chkid) && chkid!="BM44" && chkid!="PM44")
-        iff->close_chunk();
-      if (chkid=="BM44" || chkid=="PM44")
-        {
-          GP<IW44Image> junk=IW44Image::create_decode(IW44Image::COLOR);
-          junk->decode_chunk(iff->get_bytestream());
-          fprintf(stdout,"width=%d height=%d\n", 
-                  junk->get_width(), junk->get_height());
-        }
+      fprintf(stdout,"width=%d height=%d", info->width, info->height);
+      if (info->orientation)
+        fprintf(stdout, " rotation=%d", info->orientation);
+      fprintf(stdout,"\n");
     }
 }
+
 
 void
 command_size(ParsingByteStream &)
@@ -759,6 +766,121 @@ command_set_page_title(ParsingByteStream &pbs)
   g().doc->set_file_title(g().fileid, fname);
   vprint("set-page-title: modified \"%s\"", (const char*)ToNative(g().fileid));
   modified = true;
+}
+
+GP<DjVuInfo> decode_info(GP<DjVuFile> file)
+{
+  GP<DjVuInfo> info = file->info;
+  if (! info)
+    {
+      const GP<ByteStream> pbs(file->get_djvu_bytestream(false, false));
+      const GP<IFFByteStream> iff(IFFByteStream::create(pbs));
+      GUTF8String chkid;
+      if (! iff->get_chunk(chkid))
+        return 0;
+      if (chkid == "FORM:DJVU")
+        {
+          while (iff->get_chunk(chkid) && chkid!="INFO")
+            iff->close_chunk();
+          if (chkid == "INFO")
+            {
+              info = DjVuInfo::create();
+              info->decode(*iff->get_bytestream());
+            }
+        }
+      file->info = info;
+    }
+  return info;
+}
+
+bool
+set_rotation(GP<DjVuFile> file, int rot, bool relative)
+{
+  // decode info
+  GP<DjVuInfo> info = decode_info(file);
+  if (! info)
+    return false;
+  if (relative)
+    rot += info->orientation;
+  info->orientation = rot & 3;
+  file->set_modified(true);
+  modified = true;
+  return true;
+}
+
+void
+command_set_rotation(ParsingByteStream &pbs)
+{
+  GUTF8String rot = pbs.get_token();
+  if (! rot.is_int())
+    verror("usage: set-rotation [+-]<rot>");
+  int rotation = rot.toInt();
+  bool relative = (rot[0]=='+' || rot[0]=='-');
+  if (! relative)
+    if (rotation < 0 || rotation > 3)
+      verror("absolute rotation must be in range 0..3");
+  int rcount = 0;
+  if (g().file)
+    {
+      GUTF8String id = g().fileid;
+      if (set_rotation(g().file, rotation, relative))
+        rcount += 1;
+    }
+  else
+    {
+      GPList<DjVmDir::File> &lst = g().selected;
+      for (GPosition p=lst; p; ++p)
+        {
+          GUTF8String id = lst[p]->get_load_name();
+          const GP<DjVuFile> f(g().doc->get_djvu_file(id));
+          if (set_rotation(f, rotation, relative))
+            rcount += 1;
+        }
+    }
+  vprint("rotated %d pages", rcount);
+}
+
+bool
+set_dpi(GP<DjVuFile> file, int dpi)
+{
+  // decode info
+  GP<DjVuInfo> info = decode_info(file);
+  if (! info)
+    return false;
+  info->dpi = dpi;
+  file->set_modified(true);
+  modified = true;
+  return true;
+}
+
+void
+command_set_dpi(ParsingByteStream &pbs)
+{
+  GUTF8String sdpi = pbs.get_token();
+  if (! sdpi.is_int())
+    verror("usage: set-dpi <dpi>");
+  int dpi = sdpi.toInt();
+  if (dpi < 25 || dpi > 6000)
+    verror("resolution should be in range 25..6000dpi");
+  int rcount = 0;
+  if (g().file)
+    {
+      GUTF8String id = g().fileid;
+      if (set_dpi(g().file, dpi))
+        rcount += 1;
+    }
+  else
+    {
+      GPList<DjVmDir::File> &lst = g().selected;
+      for (GPosition p=lst; p; ++p)
+        {
+          GUTF8String id = lst[p]->get_load_name();
+          const GP<DjVuFile> f(g().doc->get_djvu_file(id));
+          if (set_dpi(f, dpi))
+            rcount += 1;
+        }
+    }
+  vprint("set dpi on %d pages", rcount);
 }
 
 
@@ -1639,12 +1761,14 @@ command_set_txt(ParsingByteStream &pbs)
 
 void
 output(const GP<DjVuFile> &f, const GP<ByteStream> &out, 
-       int flag, const char *id=0)
+       int flag, const char *id=0, int pageno=0)
 {
   if (f)
     {
       const GP<ByteStream> ant(ByteStream::create());
       const GP<ByteStream> txt(ByteStream::create());
+      char pagenumber[16];
+      sprintf(pagenumber," # page %d", pageno);
       if (flag & 1) 
         { 
           const GP<ByteStream> anno(f->get_anno());
@@ -1666,6 +1790,7 @@ output(const GP<DjVuFile> &f, const GP<ByteStream> &out,
           static const char msg2[] = "\n\0";
           out->write(msg1, strlen(msg1));
           print_c_string(id, strlen(id), *out, utf8);
+          if (pageno > 0) out->write(pagenumber, strlen(pagenumber));
           out->write(msg2, strlen(msg2));
         }
       if (ant->size()) 
@@ -1699,9 +1824,10 @@ command_output_ant(ParsingByteStream &)
       { // extra nesting for windows
         for (GPosition p=lst; p; ++p)
         {
+          int pageno = lst[p]->get_page_num();
           GUTF8String id = lst[p]->get_load_name();
           const GP<DjVuFile> f(g().doc->get_djvu_file(id));
-          output(f, out, 1, id);
+          output(f, out, 1, id, pageno+1);
         }
       }
     }
@@ -1723,9 +1849,10 @@ command_output_txt(ParsingByteStream &)
       { // extra nesting for windows
         for (GPosition p=lst; p; ++p)
         {
+          int pageno = lst[p]->get_page_num();
           GUTF8String id = lst[p]->get_load_name();
           const GP<DjVuFile> f(g().doc->get_djvu_file(id));
-          output(f, out, 2, id);
+          output(f, out, 2, id, pageno+1);
         }
       }
     }
@@ -1747,9 +1874,10 @@ command_output_all(ParsingByteStream &)
       { // extra nesting for windows
         for (GPosition p=lst; p; ++p)
         {
+          int pageno = lst[p]->get_page_num();
           GUTF8String id = lst[p]->get_load_name();
           const GP<DjVuFile> f(g().doc->get_djvu_file(id));
-          output(f, out, 3, id);
+          output(f, out, 3, id, pageno+1);
         }
       }
     }
@@ -1867,6 +1995,16 @@ command_set_outline(ParsingByteStream &pbs)
   if (g().doc->get_djvm_nav() != nav)
     {
       g().doc->set_djvm_nav(nav);
+      modified = true;
+    }
+}
+
+void
+command_remove_outline(ParsingByteStream &pbs)
+{
+  if (g().doc->get_djvm_nav())
+    {
+      g().doc->set_djvm_nav(0);
       modified = true;
     }
 }
@@ -2024,6 +2162,8 @@ command_help(void)
           " . set-xmp [<xmpfile>]    -- copies <xmpfile> into the xmp metadata annotation tag\n" 
           " _ set-outline [<bmfile>] -- sets outline (bootmarks)\n"
           " _ set-thumbnails [<sz>]  -- generates all thumbnails with given size\n"
+          "   set-rotation [+-]<rot> -- sets page rotation\n"
+          "   set-dpi <dpi>          -- sets page resolution\n"
           "   remove-ant             -- removes annotations\n"
           "   remove-meta            -- removes metadatas without changing other annotations\n"
           "   remove-txt             -- removes hidden text\n"
@@ -2091,9 +2231,12 @@ static GMap<GUTF8String,CommandFunc> &command_map() {
     xcommand_map["set-outline"] = command_set_outline;
     xcommand_map["set-xmp"] = command_set_xmp;
     xcommand_map["set-thumbnails"] = command_set_thumbnails;
+    xcommand_map["set-rotation"] = command_set_rotation;
+    xcommand_map["set-dpi"] = command_set_dpi;
     xcommand_map["remove-ant"] = command_remove_ant;
     xcommand_map["remove-meta"] = command_remove_meta;
     xcommand_map["remove-txt"] = command_remove_txt;
+    xcommand_map["remove-outline"] = command_remove_outline;
     xcommand_map["remove-thumbnails"] = command_remove_thumbnails;
     xcommand_map["remove-xmp"] = command_remove_xmp;
     xcommand_map["set-page-title"] = command_set_page_title;
@@ -2185,9 +2328,7 @@ execute()
 int 
 main(int argc, char **argv)
 {
-  setlocale(LC_ALL,"");
-  setlocale(LC_NUMERIC,"C");
-  djvu_programname(argv[0]);
+  DJVU_LOCALE;
   G_TRY
      {
       { // extra nesting for windows
@@ -2201,8 +2342,8 @@ main(int argc, char **argv)
           else if (!strcmp(argv[i],"-u"))
             utf8 = true;
           else if (!strcmp(argv[i],"-f") && i+1<argc && !g().cmdbs) 
-            g().cmdbs = ByteStream::create(GURL::Filename::UTF8(argv[++i]), "r");
-          else if (!strcmp(argv[i],"-e") && !g().cmdbs && ++i<argc) 
+            g().cmdbs = ByteStream::create(GURL::Filename::UTF8(GNativeString(argv[++i])), "r");
+          else if (!strcmp(argv[i],"-e") && !g().cmdbs && i+1<argc && ++i) 
             g().cmdbs = ByteStream::create_static(argv[i],strlen(argv[i]));
           else if (argv[i][0] != '-' && !g().djvufile)
             g().djvufile = GNativeString(argv[i]);
@@ -2212,7 +2353,7 @@ main(int argc, char **argv)
       if (!g().djvufile)
         usage();
       // BOM
-#ifdef WIN32
+#ifdef _WIN32
       if (utf8)
         fwrite(utf8bom, sizeof(utf8bom), 1, stdout);
 #endif
