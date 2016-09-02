@@ -363,10 +363,6 @@ GMonitor::wait(unsigned long timeout)
 # define pthread_condattr_default   NULL
 #endif
 
-#ifdef __OS2__ //@bww_todo as it seems it's not needed and we don't have it anyway
-//#define pthread_cancel( A) pthread_dummy(0)
-#endif
-
 static pthread_t pthread_null; // portable zero initialization!
 
 void *
