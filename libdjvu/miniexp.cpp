@@ -69,7 +69,6 @@ assertfail(const char *fn, int ln)
 /* -------------------------------------------------- */
 /* GLOBAL MUTEX                                       */
 /* -------------------------------------------------- */
-
 #ifndef WITHOUT_THREADS
 # ifdef _WIN32
 #  include <windows.h>
@@ -321,7 +320,7 @@ END_ANONYMOUS_NAMESPACE
 #if USE_PTHREADS
 // Manage thread specific data with pthreads
 static pthread_key_t gctls_key;
-static pthread_once_t gctls_once;
+static pthread_once_t gctls_once = PTHREAD_ONCE_INIT;
 static void gctls_destroy(void* arg) {
   CSLOCK(locker); delete (gctls_t*)arg;
 }
