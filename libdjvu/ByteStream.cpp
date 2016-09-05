@@ -620,7 +620,7 @@ ByteStream::Stdio::init(const char mode[])
     }
   }
   if(binary && fp) {
-#if defined(__CYGWIN32__)
+#if defined(__CYGWIN32__) || defined(__OS2__)
     setmode(fileno(fp), O_BINARY);
 #elif defined(_WIN32)
     _setmode(_fileno(fp), _O_BINARY);

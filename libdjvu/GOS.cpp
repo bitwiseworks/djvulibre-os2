@@ -83,7 +83,7 @@
 # define getcwd _getcwd
 #endif
 
-#if defined(OS2)
+#if defined(__OS2__)
 # define INCL_DOS
 # include <os2.h>
 #endif
@@ -94,7 +94,7 @@
 # include <unistd.h>
 #endif
 
-#if defined(UNIX) || defined(OS2)
+#if defined(UNIX) || defined(__OS2__)
 # include <errno.h>
 # include <sys/types.h>
 # include <sys/stat.h>
@@ -169,7 +169,7 @@ static const char nillchar=0;
 static inline int
 finddirsep(const GUTF8String &fname)
 {
-#if defined(_WIN32) || defined(OS2)
+#if defined(_WIN32) || defined(__OS2__)
   return fname.rcontains("\\/",0);
 #elif defined(UNIX)
   return fname.rsearch('/',0);
@@ -191,7 +191,7 @@ GOS::basename(const GUTF8String &gfname, const char *suffix)
     return gfname;
 
   const char *fname=gfname;
-#if defined(_WIN32) || defined(OS2)
+#if defined(_WIN32) || defined(__OS2__)
   // Special cases
   if (fname[1] == colon)
   {
@@ -275,7 +275,7 @@ GOS::ticks()
 #elif defined(_WIN32)
   DWORD clk = GetTickCount();
   return (unsigned long)clk;
-#elif defined(OS2)
+#elif defined(__OS2__)
   ULONG clk = 0;
   DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, (PVOID)&clk, sizeof(ULONG));
   return clk;
@@ -298,7 +298,7 @@ GOS::sleep(int milliseconds)
   ::select(0, NULL, NULL, NULL, &tv);
 #elif defined(_WIN32)
   Sleep(milliseconds);
-#elif defined(OS2)
+#elif defined(__OS2__)
   DosSleep(milliseconds);
 #elif defined(macintosh)
   unsigned long tick = ticks(), now;
@@ -322,7 +322,7 @@ GOS::sleep(int milliseconds)
 GUTF8String 
 GOS::cwd(const GUTF8String &dirname)
 {
-#if defined(UNIX) || defined(macintosh) || defined(OS2)
+#if defined(UNIX) || defined(macintosh) || defined(__OS2__)
   if (dirname.length() && chdir(dirname.getUTF82Native())==-1)//MBCS cvt
     G_THROW(errmsg());
   char *string_buffer;
