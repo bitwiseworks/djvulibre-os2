@@ -82,13 +82,13 @@
 # include <CoreFoundation/CFString.h>
 #endif
 
-#ifdef UNIX
+#if defined(UNIX) || defined(__OS2__)
 # ifndef HAS_MEMMAP
 #  define HAS_MEMMAP 1
 # endif
 #endif
 
-#ifdef UNIX
+#if defined(UNIX) || defined(__OS2__)
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <unistd.h>
