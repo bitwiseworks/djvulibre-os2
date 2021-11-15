@@ -356,6 +356,8 @@ analyze_jb2_chunk(const GURL &url)
 void
 analyze_incl_chunk(const GURL &url)
 {
+  if (! url.is_file())
+    return;
   GP<ByteStream> gbs = ByteStream::create(url,"rb");
   char buffer[24];
   memset(buffer, 0, sizeof(buffer));
@@ -522,6 +524,8 @@ create_jb2_chunk(IFFByteStream &iff, const char *chkid, const GURL &url)
 void 
 create_incl_chunk(IFFByteStream &iff, const char *chkid, const char *fileid)
 {
+  if (strchr(fileid, '/') || strchr(fileid, '\\') || strchr(fileid, ':'))
+    G_THROW( ERR_MSG("DjVuFile.malformed") );
   iff.put_chunk("INCL");
   iff.write(fileid, strlen(fileid));
   iff.close_chunk();
@@ -955,7 +959,7 @@ main(int argc, char **argv)
             }
           else if (!dargv[i].cmp("INCL=",5))
             {
-              create_incl_chunk(iff, "INCL", GURL::Filename::UTF8(5+(const char *)dargv[i]).fname());
+              create_incl_chunk(iff, "INCL", (const char *)GUTF8String(dargv[i].substr(5,-1)));
               flag_contains_incl = 1;
             }
           else if (!dargv[i].cmp("PPM=",4))

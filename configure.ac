@@ -24,7 +24,7 @@
 
 m4_define([v_maj], [3])
 m4_define([v_min], [5])
-m4_define([v_mic], [27])
+m4_define([v_mic], [28])
 m4_define([v_ver], [v_maj.v_min.v_mic])
 
 m4_define([lt_compat], [21])
@@ -41,7 +41,7 @@ AC_CONFIG_SRCDIR(libdjvu/ddjvuapi.cpp)
 AC_CONFIG_HEADER(config.h:config/config.h.in)
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE([1.6 subdir-objects dist-bzip2 dist-xz])
+AM_INIT_AUTOMAKE([1.6 subdir-objects dist-bzip2 dist-xz -Wall])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
@@ -83,6 +83,8 @@ AC_CHECK_DECL([_WIN32],[have_os_win32=yes],[have_os_win32=no])
 AM_CONDITIONAL([HAVE_OS_WIN32], [test "x${have_os_win32}" = "xyes"])
 
 AC_CHECK_DECL([__APPLE__],[have_os_apple=yes],[have_os_apple=no])
+AM_CONDITIONAL([HAVE_OS_APPLE], [test "x${have_os_apple}" = "xyes"])
+
 if test x$have_os_apple = xyes && test -d /opt/local ; then
     CPPFLAGS="$CPPFLAGS -I/opt/local/include"
     LDFLAGS="$LDFLAGS -L/opt/local/lib"
@@ -161,6 +163,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(wchar.h wctype.h sys/mman.h iconv.h getopt.h)
 AC_CHECK_HEADERS(langinfo.h sched.h new.h)
 AC_CHECK_HEADERS(stdint.h inttypes.h sys/ipc.h sys/shm.h)
+AC_CHECK_HEADERS(cpuid.h)
 
 # ----------------------------------------
 # Types

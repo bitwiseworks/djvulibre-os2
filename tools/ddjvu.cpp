@@ -279,7 +279,7 @@ render(ddjvu_page_t *page, int pageno)
       prect.h = (ih * 100) / dpi;
     }
   /* Process aspect ratio */
-  if (flag_aspect <= 0)
+  if (flag_aspect <= 0 && iw>0 && ih>0)
     {
       double dw = (double)iw / prect.w;
       double dh = (double)ih / prect.h;
@@ -691,7 +691,7 @@ closefile(int pageno)
       args[1] = "-o";
       args[2] = filename;
       if (tiff2pdf(tiff, fout, 3, args) != EXIT_SUCCESS)
-        die(i18n("Error occured while creating PDF file."));
+        die(i18n("Error occurred while creating PDF file."));
       TIFFClose(tiff);
       tiff = 0;
 #ifndef _WIN32
