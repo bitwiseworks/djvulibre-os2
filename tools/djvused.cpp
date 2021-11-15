@@ -66,6 +66,7 @@
 #include "GString.h"
 #include "DjVuDocEditor.h"
 #include "DjVuDumpHelper.h"
+#include "DjVuMessageLite.h"
 #include "BSByteStream.h"
 #include "DjVuText.h"
 #include "DjVuAnno.h"
@@ -2021,11 +2022,11 @@ command_set_thumbnails(ParsingByteStream &pbs)
 {
   GUTF8String sizestr = pbs.get_token();
   if (! sizestr)
-    sizestr = "128";
+    sizestr = "192";
   if (! sizestr.is_int() )
     verror("expecting integer argument");
   int size = atoi(sizestr);
-  if (size<32 || size >256) 
+  if (size < 32 || size > 512) 
     verror("size should be between 32 and 256 (e.g. 128)");
   g().doc->generate_thumbnails(size, callback_thumbnails, NULL);
   modified = true;
@@ -2160,7 +2161,7 @@ command_help(void)
           " . set-meta [<metafile>]  -- copies <metafile> into the metadata annotation tag\n"
           " . set-txt [<txtfile>]    -- copies <txtfile> into the hidden text chunk\n"
           " . set-xmp [<xmpfile>]    -- copies <xmpfile> into the xmp metadata annotation tag\n" 
-          " _ set-outline [<bmfile>] -- sets outline (bootmarks)\n"
+          " _ set-outline [<bmfile>] -- sets outline (bookmarks)\n"
           " _ set-thumbnails [<sz>]  -- generates all thumbnails with given size\n"
           "   set-rotation [+-]<rot> -- sets page rotation\n"
           "   set-dpi <dpi>          -- sets page resolution\n"
@@ -2315,7 +2316,8 @@ execute()
       G_CATCH(ex)
         {
           vprint("Error (%s): %s",
-                 (const char*)ToNative(token), ex.get_cause());
+                 (const char*)ToNative(token), 
+                 (const char *)DjVuMessageLite::LookUpUTF8(ex.get_cause()));
           if (! verbose)
             G_RETHROW;
         }

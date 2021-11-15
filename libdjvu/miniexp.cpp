@@ -3,8 +3,8 @@
 // MiniExp - Library for handling lisp expressions
 // Copyright (c) 2005  Leon Bottou
 //
-// This software is subject to, and may be distributed under, the
-// GNU General Public License, either version 2 of the license
+// This software is subject to, and may be distributed under, the GNU
+// Lesser General Public License, either Version 2.1 of the license,
 // or (at your option) any later version. The license should have
 // accompanied the software or you may obtain a copy of the license
 // from the Free Software Foundation at http://www.fsf.org .
@@ -134,7 +134,7 @@ class symtable_t
 public:
   int nelems;
   int nbuckets;
-  struct sym { unsigned int h; struct sym *l; char *n; };
+  struct sym { unsigned int h; struct sym *l; char *n; miniexp_t v; };
   struct sym **buckets;
   symtable_t();
   ~symtable_t();
@@ -201,6 +201,7 @@ symtable_t::lookup(const char *n, bool create)
       r->h = h;
       r->l = buckets[i];
       r->n = new char [1+strlen(n)];
+      r->v = (miniexp_t)(((size_t)r)|((size_t)2));
       strcpy(r->n, n);
       buckets[i] = r;
       if ( 2 * nelems > 3 * nbuckets)
@@ -220,7 +221,7 @@ miniexp_to_name(miniexp_t p)
     {
       struct symtable_t::sym *r;
       r = ((symtable_t::sym*)(((size_t)p)&~((size_t)3)));
-      return (r) ? r->n : "##(dummy)";
+      return (r && r->v == p) ? r->n : "##(dummy)";
     }
   return 0;
 }
@@ -236,7 +237,7 @@ miniexp_symbol(const char *name)
         symbols = new symtable_t;
     }
   r = symbols->lookup(name, true);
-  return (miniexp_t)(((size_t)r)|((size_t)2));
+  return r->v;
 }
 
 
@@ -319,6 +320,7 @@ gctls_t::~gctls_t()
 END_ANONYMOUS_NAMESPACE
 
 #if USE_PTHREADS
+
 // Manage thread specific data with pthreads
 static pthread_key_t gctls_key;
 static pthread_once_t gctls_once;
@@ -353,6 +355,7 @@ static gctls_t *gctls() {
 # endif
 
 #elif USE_WINTHREADS 
+
 // Manage thread specific data with win32
 #if defined(_MSC_VER) && defined(USE_MSVC_TLS)
 // -- Pre-vista os sometimes crashes on this.
@@ -382,17 +385,24 @@ static void NTAPI gctls_cb(PVOID, DWORD dwReason, PVOID) {
     {CSLOCK(r);TlsFree(tlsIndex);tlsIndex=TLS_OUT_OF_INDEXES;}
 }
 # endif
-// -- Very black magic to clean tls variables.
-# ifdef _M_IX86
-#  pragma comment (linker, "/INCLUDE:_tlscb")
+// -- Very black magic to clean the TLS variables
+# if !defined(_MSC_VER)
+#  warning "This only works with MSVC. Memory leak otherwise"
+# elif !defined(MINILISPAPI_EXPORT)
+#  pragma message("This only works for a DLL. Memory leak otherwise")
 # else
-#  pragma comment (linker, "/INCLUDE:tlscb")
-# endif
-# pragma const_seg(".CRT$XLB")
+#  ifdef _M_IX86
+#   pragma comment (linker, "/INCLUDE:_tlscb")
+#  else
+#   pragma comment (linker, "/INCLUDE:tlscb")
+#  endif
+#  pragma const_seg(".CRT$XLB")
 extern "C" PIMAGE_TLS_CALLBACK tlscb = gctls_cb;
-# pragma const_seg()
+#  pragma const_seg()
+# endif
 
 #else
+
 // No threads
 static gctls_t *gctls() {
   static gctls_t g;
@@ -899,6 +909,18 @@ miniobj_t::pname() const
   return res;
 }
 
+bool
+miniobj_t::stringp(const char* &, size_t &) const
+{
+  return false;
+}
+
+bool
+miniobj_t::doublep(double&) const
+{
+  return false;
+}
+
 miniexp_t 
 miniexp_object(miniobj_t *obj)
 {
@@ -939,12 +961,13 @@ class ministring_t : public miniobj_t
   MINIOBJ_DECLARE(ministring_t,miniobj_t,"string");
 public:
   ~ministring_t();
-  ministring_t(const char *s);
-  ministring_t(char *s, bool steal);
+  ministring_t(size_t len, const char *s);
+  ministring_t(size_t len, char *s, bool steal);
   operator const char*() const { return s; }
-  virtual char *pname() const;
+  virtual bool stringp(const char* &s, size_t &l) const;
 private:
   char *s;
+  size_t l;
 private:
   ministring_t(const ministring_t &);
   ministring_t& operator=(const ministring_t &);
@@ -957,17 +980,28 @@ ministring_t::~ministring_t()
   delete [] s;
 }
 
-ministring_t::ministring_t(const char *str) 
-  : s(new char[strlen(str)+1])
+ministring_t::ministring_t(size_t len, const char *str)
+  : s(0), l(len)
 {
-  strcpy(s,str);
+  s = new char[l+1];
+  memcpy(s, str, l);
+  s[l] = 0;
 }
 
-ministring_t::ministring_t(char *str, bool steal) 
-  : s(str)
+ministring_t::ministring_t(size_t len, char *str, bool steal)
+  : s(str), l(len)
 {
   ASSERT(steal);
 }
+
+bool
+ministring_t::stringp(const char* &rs, size_t &rl) const
+{
+  rs = s;
+  rl = l;
+  return true;
+}
+
 
 END_ANONYMOUS_NAMESPACE
 
@@ -985,13 +1019,15 @@ char_quoted(int c, int flags)
 }
 
 static bool
-char_utf8(int &c, const char* &s)
+char_utf8(int &c, const char* &s, size_t &len)
 {
   if (c < 0xc0)
     return (c < 0x80);
   if (c >= 0xf8)
     return false;
   int n = (c < 0xe0) ? 1 : (c < 0xf0) ? 2 : 3;
+  if ((size_t)n > len)
+    return false;
   int x = c & (0x3f >> n);
   for (int i=0; i<n; i++)
     if ((s[i] & 0xc0) == 0x80)
@@ -1005,6 +1041,7 @@ char_utf8(int &c, const char* &s)
     return false;
   if (x >= 0xd800 && x <= 0xdfff)
     return false;
+  len -= n;
   s += n;
   c = x;
   return true;
@@ -1019,16 +1056,17 @@ char_out(int c, char* &d, int &n)
 }
 
 static int
-print_c_string(const char *s, char *d, int flags = 0)
+print_c_string(const char *s, char *d, int flags, size_t len)
 {
   int c;
   int n = 0;
   char_out('\"', d, n);
-  while ((c = (unsigned char)(*s++)))
+  while (len-- > 0) 
     {
+      c = (unsigned char)(*s++);
       if (char_quoted(c, flags))
         {
-          char buffer[10];
+          char buffer[16]; /* 10+1 */
           static const char *tr1 = "\"\\tnrbf";
           static const char *tr2 = "\"\\\t\n\r\b\f";
           buffer[0] = buffer[1] = 0;
@@ -1038,7 +1076,7 @@ print_c_string(const char *s, char *d, int flags = 0)
               buffer[0] = tr1[i];
           if (buffer[0] == 0 && c >= 0x80 
               && (flags & (miniexp_io_u4escape | miniexp_io_u6escape))
-              && char_utf8(c, s) )
+              && char_utf8(c, s, len) )
             {
               if (c <= 0xffff && (flags & miniexp_io_u4escape))
                 sprintf(buffer,"u%04X", c);
@@ -1049,6 +1087,9 @@ print_c_string(const char *s, char *d, int flags = 0)
                         0xd800+(((c-0x10000)>>10)&0x3ff), 
                         0xdc00+(c&0x3ff));
             }
+          if (buffer[0] == 0 && c == 0)
+            if (*s < '0' || *s > '7')
+              buffer[0] = '0';
           if (buffer[0] == 0)
             sprintf(buffer, "%03o", c);
           for (int i=0; buffer[i]; i++)
@@ -1062,47 +1103,54 @@ print_c_string(const char *s, char *d, int flags = 0)
   return n;
 }
 
-char *
-ministring_t::pname() const
-{
-  int n = print_c_string(s, 0);
-  char *d = new char[n];
-  if (d) print_c_string(s, d);
-  return d;
-}
-
 int 
 miniexp_stringp(miniexp_t p)
 {
-  return miniexp_isa(p, ministring_t::classname) ? 1 : 0;
+  const char *s; size_t l;
+  if (miniexp_objectp(p) && miniexp_to_obj(p)->stringp(s,l))
+    return 1;
+  return 0;
 }
 
 const char *
 miniexp_to_str(miniexp_t p)
 {
-  miniobj_t *obj = miniexp_to_obj(p);
-  if (miniexp_stringp(p))
-    return (const char*) * (ministring_t*) obj;
-  return 0;
+  const char *s = 0;
+  miniexp_to_lstr(p, &s);
+  return s;
 }
 
-miniexp_t 
+size_t
+miniexp_to_lstr(miniexp_t p, const char **sp)
+{
+  const char *s = 0;
+  size_t l = 0;
+  if (miniexp_objectp(p))
+    miniexp_to_obj(p)->stringp(s,l);
+  if (sp)
+    *sp = s;
+  return l;
+}
+
+miniexp_t
 miniexp_string(const char *s)
 {
-  ministring_t *obj = new ministring_t(s);
+  return miniexp_lstring(strlen(s), s);
+}
+
+miniexp_t 
+miniexp_lstring(size_t len, const char *s)
+{
+  ministring_t *obj = new ministring_t(len,s);
   return miniexp_object(obj);
 }
 
 miniexp_t 
-miniexp_substring(const char *s, int n)
+miniexp_substring(const char *s, int len)
 {
-  int l = strlen(s);
-  n = (n < l) ? n : l;
-  char *b = new char[n+1];
-  strncpy(b, s, n);
-  b[n] = 0;
-  ministring_t *obj = new ministring_t(b, true);
-  return miniexp_object(obj);
+  size_t l = strlen(s);
+  size_t n = (size_t)len;
+  return miniexp_lstring((l < n) ? l : n, s);
 }
 
 miniexp_t 
@@ -1110,20 +1158,19 @@ miniexp_concat(miniexp_t p)
 {
   miniexp_t l = p;
   const char *s;
-  int n = 0;
+  size_t n = 0;
   if (miniexp_length(l) < 0)
     return miniexp_nil;
   for (p=l; miniexp_consp(p); p=cdr(p))
-    if ((s = miniexp_to_str(car(p))))
-      n += strlen(s);
+    n += miniexp_to_lstr(car(p), 0);
   char *b = new char[n+1];
   char *d = b;
   for (p=l; miniexp_consp(p); p=cdr(p))
-    if ((s = miniexp_to_str(car(p)))) {
-      strcpy(d, s);
-      d += strlen(d);
+    if ((n = miniexp_to_lstr(car(p), &s))) {
+      memcpy(d, s, n);
+      d += n;
     }
-  ministring_t *obj = new ministring_t(b, true);
+  ministring_t *obj = new ministring_t(d-b, b, true);
   return miniexp_object(obj);
 }
 
@@ -1142,6 +1189,7 @@ public:
   minifloat_t(double x) : val(x) {}
   operator double() const { return val; }
   virtual char *pname() const;
+  virtual bool doublep(double &d) const { d=val; return true; }
 private:
   double val;
 };
@@ -1164,14 +1212,25 @@ miniexp_floatnum(double x)
   return miniexp_object(obj);
 }
 
+int
+miniexp_doublep(miniexp_t p)
+{
+  double v = 0.0;
+  if (miniexp_numberp(p) ||
+      (miniexp_objectp(p) && miniexp_to_obj(p)->doublep(v)) )
+    return 1;
+  return 0;
+}
+
 double 
 miniexp_to_double(miniexp_t p)
 {
+  double v = 0.0;
   if (miniexp_numberp(p))
-    return (double) miniexp_to_int(p);
-  else if (miniexp_floatnump(p))
-    return (double) * (minifloat_t*) miniexp_to_obj(p);
-  return 0.0;
+    v = (double) miniexp_to_int(p);
+  else if (miniexp_objectp(p))
+    miniexp_to_obj(p)->doublep(v);
+  return v;
 }
 
 miniexp_t 
@@ -1186,7 +1245,7 @@ miniexp_double(double x)
 static bool
 str_looks_like_double(const char *s)
 {
-  if (isdigit(s[0]))
+  if (isascii(*s) && isdigit(*s))
     return true;
   if ((s[0] == '+' || s[0] == '-') && s[1])
     return true;
@@ -1367,8 +1426,8 @@ printer_t::must_quote_symbol(const char *s, int flags)
   int c;
   const char *r = s;
   while ((c = *r++))
-    if (c=='(' || c==')' || c=='\"' || c=='|' || 
-        isspace(c) || !isascii(c) || !isprint(c) ||
+    if (c=='(' || c==')' || c=='\"' || c=='|' ||
+        !isascii(c) || isspace(c) || !isprint(c) ||
         (c >= 0 && c < 128 && io->p_macrochar && io->p_macrochar[c]) )
       return true;
   double x;
@@ -1418,11 +1477,12 @@ printer_t::print(miniexp_t p)
     }
   else if (miniexp_stringp(p))
     {
-      const char *s = miniexp_to_str(p);
-      int n = print_c_string(s, 0, flags);
+      const char *s;
+      size_t len = miniexp_to_lstr(p, &s);
+      int n = print_c_string(s, 0, flags, len);
       char *d = new char[n];
       if (d) 
-        print_c_string(s, d, flags);
+        print_c_string(s, d, flags, len);
       mlput(d);
       delete [] d;
     }
@@ -1644,7 +1704,7 @@ miniexp_pname(miniexp_t p, int width)
 /* ---- INPUT */
 
 static void
-grow(char* &s, int &l, int &m)
+grow(char* &s, size_t &l, size_t &m)
 {
   int nm = ((m<256)?256:m) + ((m>32000)?32000:m);
   char *ns = new char[nm+1];
@@ -1655,7 +1715,7 @@ grow(char* &s, int &l, int &m)
 }
 
 static void
-append(int c, char* &s, int &l, int &m)
+append(int c, char* &s, size_t &l, size_t &m)
 {
   if (l >= m)
     grow(s, l, m);
@@ -1664,7 +1724,7 @@ append(int c, char* &s, int &l, int &m)
 }
 
 static void
-append_utf8(int x, char *&s, int &l, int &m)
+append_utf8(int x, char *&s, size_t &l, size_t &m)
 {
   if (x >= 0 && x <= 0x10ffff)
     { 
@@ -1745,8 +1805,8 @@ read_c_string(miniexp_io_t *io, int &c)
 {
   miniexp_t r;
   char *s = 0;
-  int l = 0;
-  int m = 0;
+  size_t l = 0;
+  size_t m = 0;
   ASSERT(c == '\"');
   c = io->fgetc(io);
   for(;;)
@@ -1819,8 +1879,8 @@ read_c_string(miniexp_io_t *io, int &c)
               io->ungetc(io, c);
               c = d;
             }
-          static const char *tr1 = "tnrbfva";
-          static const char *tr2 = "\t\n\r\b\f\013\007";
+          static const char *tr1 = "tnrbfvae?";
+          static const char *tr2 = "\t\n\r\b\f\013\007\033?";
           for (int i=0; tr1[i]; i++)
             if (c == tr1[i])
               c = tr2[i];
@@ -1829,7 +1889,7 @@ read_c_string(miniexp_io_t *io, int &c)
       c = io->fgetc(io);
     }
   c = io->fgetc(io);
-  r = miniexp_string(s ? s : "");
+  r = miniexp_lstring(l, s);
   delete [] s;
   return r;
 }
@@ -1839,8 +1899,8 @@ read_quoted_symbol(miniexp_io_t *io, int &c)
 {
   miniexp_t r;
   char *s = 0;
-  int l = 0;
-  int m = 0;
+  size_t l = 0;
+  size_t m = 0;
   ASSERT(c == '|');
   for(;;)
     {
@@ -1862,8 +1922,8 @@ read_symbol_or_number(miniexp_io_t *io, int &c)
 {
   miniexp_t r;
   char *s = 0;
-  int l = 0;
-  int m = 0;
+  size_t l = 0;
+  size_t m = 0;
   for(;;)
     {
       if (c==EOF || c=='(' || c==')' || c=='|' || c=='\"'  
@@ -1970,7 +2030,7 @@ read_miniexp(miniexp_io_t *io, int &c)
           if (io->p_diezechar && io->p_macroqueue
               && nc >= 0 && nc < 128 && io->p_diezechar[nc])
             {
-              miniexp_t p = io->p_macrochar[nc](io);
+              miniexp_t p = io->p_diezechar[nc](io);
               if (miniexp_length(p) > 0)
                 *io->p_macroqueue = p;
               else if (p)

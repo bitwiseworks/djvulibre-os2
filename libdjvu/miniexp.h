@@ -3,8 +3,8 @@
 // MiniExp - Library for handling lisp expressions
 // Copyright (c) 2005  Leon Bottou
 //
-// This software is subject to, and may be distributed under, the
-// GNU General Public License, either Version 2 of the license,
+// This software is subject to, and may be distributed under, the GNU
+// Lesser General Public License, either Version 2.1 of the license,
 // or (at your option) any later version. The license should have
 // accompanied the software or you may obtain a copy of the license
 // from the Free Software Foundation at http://www.fsf.org .
@@ -269,16 +269,28 @@ MINILISPAPI int miniexp_stringp(miniexp_t p);
 
 MINILISPAPI const char *miniexp_to_str(miniexp_t p);
 
+/* miniexp_to_lstr ---- 
+   Returns the length of the string represented by the expression.
+   Optionally returns the c string into *sp.  
+   Return 0 and makes *sp null if the expression is not a string. */
+
+MINILISPAPI size_t miniexp_to_lstr(miniexp_t p, const char **sp);
+
 /* miniexp_string --
-   Constructs a string expression by copying string s. */
+   Constructs a string expression by copying zero terminated string s. */
 
 MINILISPAPI miniexp_t miniexp_string(const char *s);
 
-/* miniexp_substring --
-   Constructs a string expression by copying 
-   at most n character from string s. */
+/* miniexp_lstring --
+   Constructs a string expression by copying len bytes from s. */
 
-MINILISPAPI miniexp_t miniexp_substring(const char *s, int n);
+MINILISPAPI miniexp_t miniexp_lstring(size_t len, const char *s);
+
+/* miniexp_substring --
+   Constructs a string expression by copying at most len bytes 
+   from zero terminated string s. */
+
+MINILISPAPI miniexp_t miniexp_substring(const char *s, int len);
 
 /* miniexp_concat --
    Concat all the string expressions in list <l>. */
@@ -304,13 +316,11 @@ MINILISPAPI miniexp_t miniexp_floatnum(double x);
    Tests if an expression can be converted
    to a double precision number. */
 
-static inline int miniexp_doublep(miniexp_t p) {
-  return miniexp_numberp(p) || miniexp_floatnump(p);
-}
+MINILISPAPI int miniexp_doublep(miniexp_t p);
 
 /* miniexp_to_double --
    Returns a double precision number corresponding to 
-   a lisp expression (a number or a floatnum.) */
+   a lisp expression. */
 
 MINILISPAPI double miniexp_to_double(miniexp_t p);
 
@@ -368,15 +378,7 @@ MINILISPAPI miniexp_t miniexp_double(double x);
      s-expressions without modifying them does not need to
      bother about minivars.
 
-   * Only the following miniexp functions can cause a
-     garbage collection: miniexp_cons(), miniexp_object(),
-     miniexp_string(), miniexp_substring(), miniexp_pname(),
-     miniexp_concat(), miniexp_pprin(), miniexp_pprint(),
-     miniexp_gc(), and minilisp_release_gc_lock().  A
-     function that does not cause calls to these functions
-     does not need to bother about minivars.
-
-   * Other functions should make sure that all useful
+   * Otherwise all functions should make sure that all useful
      s-expression are directly or indirectly secured by a
      minivar_t object. In case of doubt, use minivars
      everywhere.
@@ -721,6 +723,11 @@ miniobj_t {
   /* pname: returns a printable name for this object.
      The caller must deallocate the result with delete[]. */
   virtual char *pname() const;
+  /* stringp, doublep: tells whether this object should be
+     interpreted/printed as a generic string (for miniexp_strinp) 
+     or a double (for miniexp_doublep). */
+  virtual bool stringp(const char* &s, size_t &l) const;
+  virtual bool doublep(double &d) const;
   /* mark: calls action() on all member miniexps of the object,
      for garbage collecting purposes. */
   virtual void mark(minilisp_mark_t *action);

@@ -1578,6 +1578,12 @@ ddjvu_page_create(ddjvu_document_t *document, ddjvu_job_t *job,
         p->img = doc->get_page(GNativeString(pageid), false, job);
       else
         p->img = doc->get_page(pageno, false, job);
+      // synthetize msgs for pages found in the cache
+      ddjvu_status_t status = p->status();
+      if (status == DDJVU_JOB_OK)
+        p->notify_redisplay(p->img);
+      if (status >= DDJVU_JOB_OK)
+        p->notify_file_flags_changed(p->img->get_djvu_file(), 0, 0);
     }
   G_CATCH(ex)
     {
@@ -2128,6 +2134,7 @@ ddjvu_format_create(ddjvu_format_style_t style,
     case DDJVU_FORMAT_MSBTOLSB:
       if (!nargs) 
         break;
+      /* FALLTHRU */
     default:
       return fmt_error(fmt);
     }
@@ -2179,7 +2186,7 @@ static void
 fmt_convert_row(const GPixel *p, int w, 
                 const ddjvu_format_t *fmt, char *buf)
 {
-  const uint32_t (*r)[256] = fmt->rgb;
+  const uint32_t (&r)[3][256] = fmt->rgb;
   const uint32_t xorval = fmt->xorval;
   switch(fmt->style)
     {
@@ -2282,7 +2289,7 @@ static void
 fmt_convert_row(unsigned char *p, unsigned char g[256][4], int w, 
                 const ddjvu_format_t *fmt, char *buf)
 {
-  const uint32_t (*r)[256] = fmt->rgb;
+  const uint32_t (&r)[3][256] = fmt->rgb;
   const uint32_t xorval = fmt->xorval;
   switch(fmt->style)
     {

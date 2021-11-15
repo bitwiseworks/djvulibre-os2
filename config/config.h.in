@@ -12,6 +12,9 @@
 /* define if bool is a built-in type */
 #undef HAVE_BOOL
 
+/* Define to 1 if you have the <cpuid.h> header file. */
+#undef HAVE_CPUID_H
+
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
 #undef HAVE_DIRENT_H
@@ -201,8 +204,7 @@
 /* Define to 1 if `vfork' works. */
 #undef HAVE_WORKING_VFORK
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Name of package */
